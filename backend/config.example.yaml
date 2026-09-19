@@ -1,0 +1,15 @@
+app:
+  env: development
+  port: 8080
+
+database:
+  host: localhost
+  port: 5432
+  user: isi_user_lokal_disini
+  password: isi_password_lokal_disini
+  name: isi_nama_database_lokal_disini
+  sslmode: disable
+
+jwt:
+  secret: random_string
+  expires_in: 24h
