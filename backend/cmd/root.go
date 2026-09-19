@@ -6,11 +6,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configPath string
+var (
+	configPath string
+	envPath    string
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "auction-bid",
 	Short: "Auction & bidding backend service",
+	SilenceUsage: true,
 }
 
 func Execute() {
@@ -21,4 +25,5 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "config.yaml", "path ke file config")
+	rootCmd.PersistentFlags().StringVarP(&envPath, "env", "e", ".env", "path ke file env")
 }

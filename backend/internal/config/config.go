@@ -3,13 +3,12 @@ package config
 import (
 	"errors"
 	"fmt"
-	"strings"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
-
-
 
 type Config struct {
 	App      AppConfig      `mapstructure:"app"`
@@ -43,9 +42,15 @@ func (c DatabaseConfig) DSN() string {
 	)
 }
 
-func Load(path string) (*Config, error) {
+func Load(configPath, envPath string, configRequired, envRequired bool) (*Config, error) {
+	if err := godotenv.Load(envPath); err != nil {
+		if envRequired || !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("load env file %q: %w", envPath, err)
+		}
+	}
+
 	v := viper.New()
-	v.SetConfigFile(path)
+	v.SetConfigFile(configPath)
 	v.SetConfigType("yaml")
 
 	v.SetDefault("app.env", "development")
@@ -55,11 +60,29 @@ func Load(path string) (*Config, error) {
 	v.SetDefault("database.sslmode", "disable")
 	v.SetDefault("jwt.expires_in", "24h")
 
-	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	v.AutomaticEnv()
+	bindings := map[string]string{
+		"app.env":           "APP_ENV",
+		"app.port":          "APP_PORT",
+		"database.host":     "POSTGRES_HOST",
+		"database.port":     "POSTGRES_PORT",
+		"database.user":     "POSTGRES_USER",
+		"database.password": "POSTGRES_PASSWORD",
+		"database.name":     "POSTGRES_DB",
+		"database.sslmode":  "POSTGRES_SSLMODE",
+		"jwt.secret":        "JWT_SECRET",
+		"jwt.expires_in":    "JWT_EXPIRES_IN",
+	}
+
+	for key, env := range bindings {
+		if err := v.BindEnv(key, env); err != nil {
+			return nil, fmt.Errorf("bind env %s: %w", env, err)
+		}
+	}
 
 	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("read config %q: %w", path, err)
+		if configRequired || !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("read config %q: %w", configPath, err)
+		}
 	}
 
 	var cfg Config
@@ -74,11 +97,17 @@ func Load(path string) (*Config, error) {
 }
 
 func (c *Config) validate() error {
-	if c.Database.User == "" || c.Database.Name == "" {
-		return errors.New("config: database.user dan database.name wajib diisi")
+	if c.Database.User == "" {
+		return errors.New("config: POSTGRES_USER wajib diisi di .env")
+	}
+	if c.Database.Password == "" {
+		return errors.New("config: POSTGRES_PASSWORD wajib diisi di .env")
+	}
+	if c.Database.Name == "" {
+		return errors.New("config: POSTGRES_DB wajib diisi di .env")
 	}
 	if len(c.JWT.Secret) < 32 {
-		return errors.New("config: jwt.secret minimal 32 karakter")
+		return errors.New("config: JWT_SECRET wajib diisi di .env, minimal 32 karakter")
 	}
 	if c.JWT.ExpiresIn <= 0 {
 		return errors.New("config: jwt.expires_in harus positif, misalnya 24h")
