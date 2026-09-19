@@ -1,9 +1,26 @@
 package cmd
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/cobra"
+
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/config"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/database"
-	"github.com/spf13/cobra"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/handlers"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/repository"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/routes"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+)
+
+const (
+	shutdownTimeout   = 10 * time.Second
+	readHeaderTimeout = 10 * time.Second
 )
 
 var serveCmd = &cobra.Command{
@@ -34,6 +51,46 @@ var serveCmd = &cobra.Command{
 		defer db.Close()
 
 		cmd.Println("database: connected")
+
+		userRepo := repository.NewUserRepository(db)
+		tokenManager := services.NewTokenManager(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
+		authService := services.NewAuthService(userRepo, tokenManager)
+		handler := handlers.New(authService)
+
+		if cfg.App.Env != "development" {
+			gin.SetMode(gin.ReleaseMode)
+		}
+		router := gin.Default()
+		routes.Setup(router, handler)
+
+		srv := &http.Server{
+			Addr:    fmt.Sprintf(":%d", cfg.App.Port),
+			Handler: router,
+			ReadHeaderTimeout: readHeaderTimeout,
+		}
+
+		errCh := make(chan error, 1)
+		go func() {
+			if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				errCh <- err
+			}
+		}()
+		cmd.Printf("http: listening on %s\n", srv.Addr)
+
+		select {
+		case err := <-errCh:
+			return fmt.Errorf("http server: %w", err)
+		case <-cmd.Context().Done():
+			cmd.Println("http: shutting down...")
+		}
+
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			return fmt.Errorf("http shutdown: %w", err)
+		}
+		cmd.Println("http: stopped")
 		return nil
 	},
 }
