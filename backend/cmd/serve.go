@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/config"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/database"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,14 @@ var serveCmd = &cobra.Command{
 			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Name, cfg.Database.SSLMode,
 		)
 		cmd.Printf("jwt.expires_in=%s\n", cfg.JWT.ExpiresIn)
+
+		db, err := database.New(cmd.Context(), cfg.Database.DSN())
+		if err != nil {
+			return err
+		}
+		defer db.Close()
+
+		cmd.Println("database: connected")
 		return nil
 	},
 }

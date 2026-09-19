@@ -28,6 +28,7 @@ type DatabaseConfig struct {
 	Password string `mapstructure:"password"`
 	Name     string `mapstructure:"name"`
 	SSLMode  string `mapstructure:"sslmode"`
+	ConnectTimeout int `mapstructure:"connect_timeout"`
 }
 
 type JWTConfig struct {
@@ -37,8 +38,8 @@ type JWTConfig struct {
 
 func (c DatabaseConfig) DSN() string {
 	return fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		c.Host, c.Port, c.User, c.Password, c.Name, c.SSLMode,
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s connect_timeout=%d",
+		c.Host, c.Port, c.User, c.Password, c.Name, c.SSLMode, c.ConnectTimeout,
 	)
 }
 
@@ -58,19 +59,21 @@ func Load(configPath, envPath string, configRequired, envRequired bool) (*Config
 	v.SetDefault("database.host", "localhost")
 	v.SetDefault("database.port", 5432)
 	v.SetDefault("database.sslmode", "disable")
+	v.SetDefault("database.connect_timeout", 5)
 	v.SetDefault("jwt.expires_in", "24h")
 
 	bindings := map[string]string{
-		"app.env":           "APP_ENV",
-		"app.port":          "APP_PORT",
-		"database.host":     "POSTGRES_HOST",
-		"database.port":     "POSTGRES_PORT",
-		"database.user":     "POSTGRES_USER",
-		"database.password": "POSTGRES_PASSWORD",
-		"database.name":     "POSTGRES_DB",
-		"database.sslmode":  "POSTGRES_SSLMODE",
-		"jwt.secret":        "JWT_SECRET",
-		"jwt.expires_in":    "JWT_EXPIRES_IN",
+		"app.env":                  "APP_ENV",
+		"app.port":                 "APP_PORT",
+		"database.host":            "POSTGRES_HOST",
+		"database.port":            "POSTGRES_PORT",
+		"database.user":            "POSTGRES_USER",
+		"database.password":        "POSTGRES_PASSWORD",
+		"database.name":            "POSTGRES_DB",
+		"database.sslmode":         "POSTGRES_SSLMODE",
+		"database.connect_timeout": "POSTGRES_CONNECT_TIMEOUT",
+		"jwt.secret":               "JWT_SECRET",
+		"jwt.expires_in":           "JWT_EXPIRES_IN",
 	}
 
 	for key, env := range bindings {
@@ -108,6 +111,9 @@ func (c *Config) validate() error {
 	}
 	if len(c.JWT.Secret) < 32 {
 		return errors.New("config: JWT_SECRET wajib diisi di .env, minimal 32 karakter")
+	}
+	if c.Database.ConnectTimeout <= 0 {
+		return errors.New("config: database.connect_timeout harus positif, dalam detik")
 	}
 	if c.JWT.ExpiresIn <= 0 {
 		return errors.New("config: jwt.expires_in harus positif, misalnya 24h")
