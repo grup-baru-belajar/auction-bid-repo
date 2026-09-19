@@ -19,16 +19,17 @@ type Config struct {
 type AppConfig struct {
 	Env  string `mapstructure:"env"`
 	Port int    `mapstructure:"port"`
+	CORSOrigins []string `mapstructure:"cors_origins"`
 }
 
 type DatabaseConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
-	Name     string `mapstructure:"name"`
-	SSLMode  string `mapstructure:"sslmode"`
-	ConnectTimeout int `mapstructure:"connect_timeout"`
+	Host           string `mapstructure:"host"`
+	Port           int    `mapstructure:"port"`
+	User           string `mapstructure:"user"`
+	Password       string `mapstructure:"password"`
+	Name           string `mapstructure:"name"`
+	SSLMode        string `mapstructure:"sslmode"`
+	ConnectTimeout int    `mapstructure:"connect_timeout"`
 }
 
 type JWTConfig struct {
@@ -56,6 +57,7 @@ func Load(configPath, envPath string, configRequired, envRequired bool) (*Config
 
 	v.SetDefault("app.env", "development")
 	v.SetDefault("app.port", 8080)
+	v.SetDefault("app.cors_origins", []string{"http://localhost:5173"})
 	v.SetDefault("database.host", "localhost")
 	v.SetDefault("database.port", 5432)
 	v.SetDefault("database.sslmode", "disable")
@@ -65,6 +67,7 @@ func Load(configPath, envPath string, configRequired, envRequired bool) (*Config
 	bindings := map[string]string{
 		"app.env":                  "APP_ENV",
 		"app.port":                 "APP_PORT",
+		"app.cors_origins":         "APP_CORS_ORIGINS",
 		"database.host":            "POSTGRES_HOST",
 		"database.port":            "POSTGRES_PORT",
 		"database.user":            "POSTGRES_USER",
