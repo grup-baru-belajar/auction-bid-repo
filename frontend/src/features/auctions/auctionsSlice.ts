@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import { auctionApi } from "../../services/api";
 import type {
   Auction,
@@ -42,7 +46,7 @@ export const fetchAuctions = createAsyncThunk<
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
     return rejectWithValue(
-      error.response?.data?.message || "Failed to fetch auctions"
+      error.response?.data?.message || "Failed to fetch auctions",
     );
   }
 });
@@ -59,7 +63,7 @@ export const fetchAuctionDetail = createAsyncThunk<
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
     return rejectWithValue(
-      error.response?.data?.message || "Failed to fetch auction detail"
+      error.response?.data?.message || "Failed to fetch auction detail",
     );
   }
 });
@@ -76,7 +80,7 @@ export const createAuction = createAsyncThunk<
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
     return rejectWithValue(
-      error.response?.data?.message || "Failed to create auction"
+      error.response?.data?.message || "Failed to create auction",
     );
   }
 });
@@ -113,10 +117,13 @@ const auctionsSlice = createSlice({
         state.detailLoading = true;
         state.error = null;
       })
-      .addCase(fetchAuctionDetail.fulfilled, (state, action: PayloadAction<AuctionDetail>) => {
-        state.detailLoading = false;
-        state.selectedAuction = action.payload;
-      })
+      .addCase(
+        fetchAuctionDetail.fulfilled,
+        (state, action: PayloadAction<AuctionDetail>) => {
+          state.detailLoading = false;
+          state.selectedAuction = action.payload;
+        },
+      )
       .addCase(fetchAuctionDetail.rejected, (state, action) => {
         state.detailLoading = false;
         state.error = action.payload || "Failed to fetch auction detail";
@@ -126,10 +133,13 @@ const auctionsSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(createAuction.fulfilled, (state, action: PayloadAction<Auction>) => {
-        state.loading = false;
-        state.list.unshift(action.payload);
-      })
+      .addCase(
+        createAuction.fulfilled,
+        (state, action: PayloadAction<Auction>) => {
+          state.loading = false;
+          state.list.unshift(action.payload);
+        },
+      )
       .addCase(createAuction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to create auction";
