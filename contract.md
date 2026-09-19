@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> bf56b32 (feat(backend): add bidding functionality with bid service and handler)
 # Project Title
 
 A brief description of what this project does and who it's for
@@ -196,11 +192,8 @@ GET /auctions/1
       "id": 5,
       "name": "John Doe"
     },
-<<<<<<< HEAD
     "totalBids": 12,
     "totalBidders": 5,
-=======
->>>>>>> bf56b32 (feat(backend): add bidding functionality with bid service and handler)
     "topBids": [
       {
         "id": 10,
@@ -384,7 +377,6 @@ POST /bid
 
 ---
 
-<<<<<<< HEAD
 # 6. Reporting
 
 Endpoint untuk dashboard reporting/analytics. Semua endpoint di bawah ini **ADMIN only** dan memerlukan JWT Bearer Token.
@@ -568,8 +560,6 @@ Authorization: Bearer <token>
 
 ---
 
-=======
->>>>>>> bf56b32 (feat(backend): add bidding functionality with bid service and handler)
 # Database Schema
 
 ## Users
