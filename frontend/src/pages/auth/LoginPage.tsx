@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks'; 
 import { login } from '../../features/auth/authSlice';
@@ -6,9 +6,16 @@ import toast from 'react-hot-toast';
 
 const useLoginController = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.auth);
 
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+  const dispatch = useAppDispatch();
+
+  const { loading, error } = useAppSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -55,12 +62,12 @@ const LoginPage: React.FC = () => {
         <div className="w-full md:w-1/2 flex flex-col justify-center p-8 md:p-12">
           <div className="text-center mb-8">
             <h2 className="text-[28px] font-bold text-gray-800 mb-1">Welcome Back 👋</h2>
-            <p className="text-sm text-gray-500">
+            {/* <p className="text-sm text-gray-500">
               Tidak punya akun?{' '}
               <Link to="/register" className="text-[#3EA2E8] font-semibold hover:underline">
                 Daftar
               </Link>
-            </p>
+            </p> */}
           </div>
 
           {/* {error && (

@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import type { AuctionDetail } from "../../types";
 import { auctionApi, bidApi } from "../../services/api";
-
+import { useAppSelector } from "../../store/hooks";
+import { toast } from "react-hot-toast";
 import PersonImage from "../../assets/person.png"
 
 
@@ -184,6 +185,8 @@ function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
 const AuctionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated, user} = useAppSelector((state) => state.auth);
+  const isAdmin = user?.role === "ADMIN";
 
   const [auction, setAuction] = useState<AuctionDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -193,12 +196,28 @@ const AuctionDetailPage = () => {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
-    auctionApi
-      .getAuctionDetail(Number(id))
-      .then((res) => setAuction(res.data.data))
-      .catch(() => setAuction(null))
-      .finally(() => setLoading(false));
+    let isMounted = true; 
+    const fetchAuctionDetail = async () => {
+      setLoading(true); 
+      try {
+        const res = await auctionApi.getAuctionDetail(Number(id));
+        if (isMounted) {
+          setAuction(res.data.data);
+        }
+      } catch {
+        if (isMounted) {
+          setAuction(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+    fetchAuctionDetail();
+    return () => {
+      isMounted = false; 
+    };
   }, [id]);
 
   const handlePlaceBid = async () => {
@@ -222,6 +241,7 @@ const AuctionDetailPage = () => {
       // Refresh data setelah bid berhasil
       const res = await auctionApi.getAuctionDetail(Number(id));
       setAuction(res.data.data);
+      toast.success("Bid Placed");
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -318,45 +338,80 @@ const AuctionDetailPage = () => {
 
             <TopBidderTable bids={auction.topBids} />
 
-            {
-              !auction.isCompleted && <div className="space-y-1.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all bg-white shadow-sm">
-                    <span className="pl-4 pr-2 text-sm font-medium text-gray-400 select-none">
-                      Rp
-                    </span>
-                    <input
-                      id="bid-amount-input"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="Input your bid nominal"
-                      value={bidInput}
-                      disabled={bidLoading}
-                      onChange={(e) => {
-                        setBidInput(e.target.value);
-                        setBidError("");
-                      }}
-                      className="flex-1 py-3 pr-4 text-sm text-gray-800 outline-none placeholder-gray-300 bg-transparent disabled:opacity-50"
-                      aria-label="Nominal bid"
-                    />
+            {!auction.isCompleted && (
+              <div className="space-y-1.5">
+                {isAdmin ? (
+                  <div className="flex items-center gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-amber-900">Admin Restricted</p>
+                      <p className="text-xs text-amber-700 mt-0.5">Admin accounts are not allowed to place bids on auctions.</p>
+                    </div>
                   </div>
-                  <button
-                    id="place-bid-btn"
-                    onClick={handlePlaceBid}
-                    disabled={bidLoading}
-                    className="px-6 py-3 bg-[#1A4B69] hover:bg-[#12364c] active:scale-95 text-white text-sm font-semibold rounded-xl transition-all shadow-sm whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {bidLoading && (
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    )}
-                    {bidLoading ? "Placing..." : "Place Bid"}
-                  </button>
-                </div>
+                ) : isAuthenticated ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all bg-white shadow-sm">
+                      <span className="pl-4 pr-2 text-sm font-medium text-gray-400 select-none">
+                        Rp
+                      </span>
+                      <input
+                        id="bid-amount-input"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="Input your bid nominal"
+                        value={bidInput}
+                        disabled={bidLoading}
+                        onChange={(e) => {
+                          setBidInput(e.target.value);
+                          setBidError("");
+                        }}
+                        className="flex-1 py-3 pr-4 text-sm text-gray-800 outline-none placeholder-gray-300 bg-transparent disabled:opacity-50"
+                        aria-label="Nominal bid"
+                      />
+                    </div>
+                    <button
+                      id="place-bid-btn"
+                      onClick={handlePlaceBid}
+                      disabled={bidLoading}
+                      className="px-6 py-3 bg-[#1A4B69] hover:bg-[#12364c] active:scale-95 text-white text-sm font-semibold rounded-xl transition-all shadow-sm whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {bidLoading && (
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      )}
+                      {bidLoading ? "Placing..." : "Place Bid"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row justify-between items-center bg-blue-50/50 p-4 rounded-xl border border-blue-100 gap-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-blue-900">Login Required</p>
+                        <p className="text-xs text-blue-700 mt-0.5">You must be logged in to place a bid on this item.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate("/login")}
+                      className="w-full sm:w-auto px-6 py-2.5 bg-[#1A4B69] hover:bg-[#12364c] text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
+                    >
+                      Login to Bid
+                    </button>
+                  </div>
+                )}
+
                 {bidError && (
                   <p className="text-xs text-red-500 pl-1">{bidError}</p>
                 )}
               </div>
-            }
+            )}
           </div>
         </div>
       </main>
