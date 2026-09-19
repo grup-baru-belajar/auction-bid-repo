@@ -1,0 +1,11 @@
+app:
+  env: development
+  port: 8080
+
+database:
+  host: localhost
+  port: 5432
+  sslmode: disable
+
+jwt:
+  expires_in: 24h

@@ -1,5 +1,7 @@
 package main
 
+import "github.com/grup-baru-belajar/auction-bid-repo/cmd"
+
 func main() {
-	println("Hello, World!")
+	cmd.Execute()
 }
