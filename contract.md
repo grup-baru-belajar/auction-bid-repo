@@ -1,3 +1,4 @@
+
 # Project Title
 
 A brief description of what this project does and who it's for
@@ -200,6 +201,8 @@ GET /auctions/1
       "id": 5,
       "name": "John Doe"
     },
+    "totalBids": 12,
+    "totalBidders": 5,
     "topBids": [
       {
         "id": 10,
