@@ -55,12 +55,18 @@ var serveCmd = &cobra.Command{
 
 		userRepo := repository.NewUserRepository(db)
 		auctionRepo := repository.NewAuctionRepository(db)
+		auctionDetailRepo := repository.NewAuctionDetailRepository(db)
 
 		tokenManager := services.NewTokenManager(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
 		authService := services.NewAuthService(userRepo, tokenManager)
 		auctionService := services.NewAuctionService(auctionRepo)
+		auctionDetailService := services.NewAuctionDetailService(auctionDetailRepo)
 
-		handler := handlers.New(authService, auctionService)
+		handler := handlers.New(
+								authService, 
+								auctionService,
+								auctionDetailService,
+							)
 
 		if cfg.App.Env != "development" {
 			gin.SetMode(gin.ReleaseMode)

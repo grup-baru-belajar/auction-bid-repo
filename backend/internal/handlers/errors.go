@@ -43,6 +43,9 @@ func respondWithError (c *gin.Context, err error) {
 	case errors.Is(err, services.ErrInvalidToken):
 		respondError(c, http.StatusUnauthorized, "Invalid or expired token")
 
+	case errors.Is(err, services.ErrAuctionNotFound):
+		respondError(c, http.StatusNotFound, "Auction not found")
+
 	case errors.Is(err, services.ErrInvalidStartingPrice):
 		respondError(c, http.StatusBadRequest, err.Error())
 

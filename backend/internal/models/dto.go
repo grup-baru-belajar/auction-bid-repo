@@ -65,3 +65,27 @@ type GetAuctionsQuery struct {
 	Limit       int   `form:"limit"`
 	IsCompleted *bool `form:"isCompleted"`
 }
+
+type TopBidResponse struct {
+	ID        int64           `json:"id"`
+	UserID    int64           `json:"userId"`
+	UserName  string          `json:"userName"`
+	BidPrice  decimal.Decimal `json:"bidPrice"`
+	CreatedAt time.Time       `json:"createdAt"`
+}
+
+type AuctionDetailResponse struct {
+	ID            int64              `json:"id"`
+	AuctionName   string             `json:"auctionName"`
+	Description   string             `json:"description"`
+	ImageLink     string             `json:"imageLink"`
+	StartingPrice decimal.Decimal    `json:"startingPrice"`
+	LastPrice     decimal.Decimal    `json:"lastPrice"`
+	CreatedAt     time.Time          `json:"createdAt"`
+	EndTime       time.Time          `json:"endTime"`
+	IsCompleted   bool               `json:"isCompleted"`
+	BidWinner     *BidWinnerResponse `json:"bidWinner"`
+	TotalBids     int64              `json:"totalBids"`
+	TotalBidders  int64              `json:"totalBidders"`
+	TopBids       []TopBidResponse   `json:"topBids"`
+}
