@@ -80,6 +80,19 @@ type BidResponse struct {
 	CreatedAt time.Time       `json:"createdAt"`
 }
 
+type BidRequest struct {
+	AuctionID int64           `json:"auctionId" binding:"required"`
+	BidPrice  decimal.Decimal `json:"bidPrice" binding:"required"`
+}
+
+type BidResponse struct {
+	ID        int64           `json:"id"`
+	AuctionID int64           `json:"auctionId"`
+	UserID    int64           `json:"userId"`
+	BidPrice  decimal.Decimal `json:"bidPrice"`
+	CreatedAt time.Time       `json:"createdAt"`
+}
+
 type TopBidResponse struct {
 	ID        int64           `json:"id"`
 	UserID    int64           `json:"userId"`

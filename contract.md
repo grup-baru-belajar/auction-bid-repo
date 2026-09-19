@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> bf56b32 (feat(backend): add bidding functionality with bid service and handler)
 # Project Title
 
 A brief description of what this project does and who it's for
@@ -28,7 +31,6 @@ Authorization: Bearer <jwt_token>
 | Role | Permission |
 |--------|--------|
 | ADMIN | Membuat auction |
-| USER | Login dan melakukan bid |
 
 ---
 
@@ -47,7 +49,6 @@ Authorization: Bearer <jwt_token>
 ## Error Response
 
 ```json
-{
   "success": false,
   "message": "Error message"
 }
@@ -70,7 +71,6 @@ Content-Type: application/json
 
 ```json
 {
-  "username": "john",
   "password": "password123"
 }
 ```
@@ -117,7 +117,6 @@ ADMIN only.
 ```http
 POST /auctions
 Authorization: Bearer <token>
-Content-Type: application/json
 ```
 
 ```json
@@ -149,9 +148,6 @@ Content-Type: application/json
     "description": "Brand new iPhone 15 Pro 256GB Natural Titanium",
     "imageLink": "https://cdn.example.com/images/iphone15pro.jpg",
     "startingPrice": 10000000,
-    "lastPrice": 10000000,
-    "createdAt": "2026-09-18T08:00:00Z",
-    "endTime": "2026-12-31T23:59:59Z",
     "isCompleted": false,
     "bidWinner": null
   }
@@ -183,7 +179,6 @@ GET /auctions/1
 
 ### Response 200
 
-```json
 {
   "success": true,
   "message": "Auction retrieved successfully",
@@ -201,8 +196,11 @@ GET /auctions/1
       "id": 5,
       "name": "John Doe"
     },
+<<<<<<< HEAD
     "totalBids": 12,
     "totalBidders": 5,
+=======
+>>>>>>> bf56b32 (feat(backend): add bidding functionality with bid service and handler)
     "topBids": [
       {
         "id": 10,
@@ -246,8 +244,6 @@ GET /auctions/1
 
 ---
 
-# 4. Get Auctions
-
 ## GET /auctions
 
 Mengambil daftar seluruh auction.
@@ -257,7 +253,6 @@ Mengambil daftar seluruh auction.
 ```http
 GET /auctions
 ```
-
 ### Query Parameters
 
 | Parameter | Type | Required | Description |
@@ -317,7 +312,6 @@ Membuat bid baru pada auction.
 Login required.
 
 ### Business Rules
-
 - User harus login.
 - Auction harus masih aktif.
 - Auction belum selesai (`isCompleted = false`).
@@ -331,12 +325,6 @@ Login required.
 
 ```http
 POST /bid
-Authorization: Bearer <token>
-Content-Type: application/json
-```
-
-```json
-{
   "auctionId": 1,
   "bidPrice": 16000000
 }
@@ -396,6 +384,7 @@ Content-Type: application/json
 
 ---
 
+<<<<<<< HEAD
 # 6. Reporting
 
 Endpoint untuk dashboard reporting/analytics. Semua endpoint di bawah ini **ADMIN only** dan memerlukan JWT Bearer Token.
@@ -406,7 +395,6 @@ Endpoint untuk dashboard reporting/analytics. Semua endpoint di bawah ini **ADMI
 
 Mengambil 5 auction dengan jumlah bid terbanyak.
 
-### Authorization
 
 ADMIN only.
 
@@ -452,9 +440,6 @@ Mengambil jumlah bid per hari untuk 7 hari terakhir.
 
 ### Authorization
 
-ADMIN only.
-
-### Request
 
 ```http
 GET /reporting/auction-activity
@@ -495,9 +480,6 @@ Mengambil jumlah auction per status (ACTIVE / ENDED).
 
 ### Authorization
 
-ADMIN only.
-
-### Request
 
 ```http
 GET /reporting/auction-status
@@ -535,7 +517,6 @@ Mengambil ringkasan agregat seluruh auction dan bid.
 
 ADMIN only.
 
-### Request
 
 ```http
 GET /reporting/auction-summary
@@ -571,7 +552,6 @@ Authorization: Bearer <token>
   "message": "Unauthorized"
 }
 ```
-
 ### Response 403
 
 ```json
@@ -588,15 +568,14 @@ Authorization: Bearer <token>
 
 ---
 
+=======
+>>>>>>> bf56b32 (feat(backend): add bidding functionality with bid service and handler)
 # Database Schema
 
 ## Users
 
 ```sql
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    username VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL
 );
@@ -653,7 +632,6 @@ CREATE TABLE bid (
 | 201 | Created |
 | 400 | Validation Error |
 | 401 | Unauthorized |
-| 403 | Forbidden |
 | 404 | Resource Not Found |
 | 409 | Conflict |
 | 500 | Internal Server Error |

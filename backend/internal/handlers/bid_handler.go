@@ -23,7 +23,6 @@ func (h *Handler) PostBid(c *gin.Context) {
 		respondError(c, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-
 	claims, ok := val.(*token.Claims)
 	if !ok {
 		respondError(c, http.StatusUnauthorized, "Unauthorized")
