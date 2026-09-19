@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../store/hooks'; 
+import { login } from '../../features/auth/authSlice';
 
 const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // Ambil state loading dan error dari Redux
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector((state) => state.auth);
+
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -11,10 +19,15 @@ const LoginPage: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Data Login (Dummy):', formData);
-    alert('Tombol Sign In ditekan! Cek console.');
+    
+    try {
+      await dispatch(login(formData)).unwrap();
+      navigate('/');
+    } catch (err) {
+      console.error('Login gagal:', err);
+    }
   };
 
   return (
@@ -38,6 +51,12 @@ const LoginPage: React.FC = () => {
               </Link>
             </p>
           </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm rounded">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -81,9 +100,12 @@ const LoginPage: React.FC = () => {
             <div>
               <button
                 type="submit"
-                className="w-full bg-[#1A4B69] hover:bg-[#12364c] text-white text-sm font-semibold py-3 rounded-md transition-colors duration-200 shadow-sm"
+                disabled={loading}
+                className={`w-full text-white text-sm font-semibold py-3 rounded-md transition-colors duration-200 shadow-sm ${
+                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#1A4B69] hover:bg-[#12364c]'
+                }`}
               >
-                Sign in
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
           </form>
