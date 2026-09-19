@@ -8,17 +8,28 @@ import (
 )
 
 type Handler struct {
-	authService services.AuthService
+	authService    services.AuthService
+	auctionService services.AuctionService
 }
 
-func New(authService services.AuthService) *Handler {
+func New(authService services.AuthService, auctionService services.AuctionService) *Handler {
 	return &Handler{
-		authService: authService,
+		authService:    authService,
+		auctionService: auctionService,
 	}
 }
 
 func respondSuccess(c *gin.Context, status int, message string, data any) {
 	c.JSON(status, models.APIResponse{Success: true, Message: message, Data: data})
+}
+
+func respondSuccessWithPagination(c *gin.Context, status int, message string, data any, pagination models.PaginationResponse) {
+	c.JSON(status, models.APIResponse{
+		Success:    true,
+		Message:    message,
+		Data:       data,
+		Pagination: &pagination,
+	})
 }
 
 func respondError(c *gin.Context, status int, message string) {

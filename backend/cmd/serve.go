@@ -54,16 +54,20 @@ var serveCmd = &cobra.Command{
 		cmd.Println("database: connected")
 
 		userRepo := repository.NewUserRepository(db)
+		auctionRepo := repository.NewAuctionRepository(db)
+
 		tokenManager := services.NewTokenManager(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
 		authService := services.NewAuthService(userRepo, tokenManager)
-		handler := handlers.New(authService)
+		auctionService := services.NewAuctionService(auctionRepo)
+
+		handler := handlers.New(authService, auctionService)
 
 		if cfg.App.Env != "development" {
 			gin.SetMode(gin.ReleaseMode)
 		}
 		router := gin.Default()
 		router.Use(middleware.CORS(cfg.App.CORSOrigins))
-		routes.Setup(router, handler)
+		routes.Setup(router, handler, tokenManager)
 
 		srv := &http.Server{
 			Addr:              fmt.Sprintf(":%d", cfg.App.Port),
