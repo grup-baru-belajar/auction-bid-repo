@@ -12,6 +12,7 @@ type Handler struct {
 	auctionService       services.AuctionService
 	auctionDetailService services.AuctionDetailService
 	bidService           services.BidService
+	reportingService     services.ReportingService
 }
 
 func New(
@@ -19,12 +20,14 @@ func New(
 	auctionService services.AuctionService,
 	auctionDetailService services.AuctionDetailService,
 	bidService services.BidService,
+	reportingService services.ReportingService,
 ) *Handler {
 	return &Handler{
 		authService:          authService,
 		auctionService:       auctionService,
 		auctionDetailService: auctionDetailService,
 		bidService:           bidService,
+		reportingService:     reportingService,
 	}
 }
 
