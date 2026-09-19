@@ -13,7 +13,7 @@ func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *services.TokenManag
 	api.POST("/login", h.PostLogin)
 
 	api.GET("/auctions", h.GetAuctions)
-	api.GET("/auctions/:id", h.GetAuctionByID) 
+	api.GET("/auctions/:id", h.GetAuctionByID)
 	api.POST("/auctions", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.PostAuction)
-	
+
 }

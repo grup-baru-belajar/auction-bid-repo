@@ -13,7 +13,7 @@ import (
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/config"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/database"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/handlers"
-	"github.com/grup-baru-belajar/auction-bid-repo/internal/middleware"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/middlewares"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/repository"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/routes"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
@@ -63,16 +63,16 @@ var serveCmd = &cobra.Command{
 		auctionDetailService := services.NewAuctionDetailService(auctionDetailRepo)
 
 		handler := handlers.New(
-								authService, 
-								auctionService,
-								auctionDetailService,
-							)
+			authService,
+			auctionService,
+			auctionDetailService,
+		)
 
 		if cfg.App.Env != "development" {
 			gin.SetMode(gin.ReleaseMode)
 		}
 		router := gin.Default()
-		router.Use(middleware.CORS(cfg.App.CORSOrigins))
+		router.Use(middlewares.CORS(cfg.App.CORSOrigins))
 		routes.Setup(router, handler, tokenManager)
 
 		srv := &http.Server{
