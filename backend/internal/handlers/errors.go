@@ -43,6 +43,12 @@ func respondWithError (c *gin.Context, err error) {
 	case errors.Is(err, services.ErrInvalidToken):
 		respondError(c, http.StatusUnauthorized, "Invalid or expired token")
 
+	case errors.Is(err, services.ErrInvalidStartingPrice):
+		respondError(c, http.StatusBadRequest, err.Error())
+
+	case errors.Is(err, services.ErrInvalidEndTime):
+		respondError(c, http.StatusBadRequest, err.Error())
+
 	default:
 		log.Printf("unhandled error on %s %s: %v", c.Request.Method, c.Request.URL.Path, err)
 		respondError(c, http.StatusInternalServerError, "Internal server error")

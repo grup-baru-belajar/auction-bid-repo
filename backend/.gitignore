@@ -34,3 +34,5 @@ config.yaml
 ._*
 Thumbs.db
 ehthumbs.db
+
+../.DS_Store
