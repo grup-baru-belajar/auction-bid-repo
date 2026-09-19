@@ -4,11 +4,12 @@ import type { AuctionDetail } from "../../types";
 import { auctionApi, bidApi } from "../../services/api";
 import { useAppSelector } from "../../store/hooks";
 import { toast } from "react-hot-toast";
-import PersonImage from "../../assets/person.png"
+import PersonImage from "../../assets/person.png";
 
-
-const formatRupiah = (value: number) =>
-  "Rp " + new Intl.NumberFormat("id-ID").format(value);
+const formatRupiah = (value: number | string) => {
+  const num = typeof value === "string" ? Number(value) : value;
+  return "Rp" + new Intl.NumberFormat("id-ID").format(num);
+};
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", {
@@ -16,7 +17,6 @@ const formatDate = (iso: string) =>
     month: "short",
     year: "numeric",
   });
-
 
 function AuctionCard({ auction }: { auction: AuctionDetail }) {
   return (
@@ -45,41 +45,36 @@ function AuctionCard({ auction }: { auction: AuctionDetail }) {
         <h2 className="text-base font-bold text-gray-800 leading-tight">
           {auction.auctionName}
         </h2>
-        <p className="text-xs text-gray-500 mt-2">{formatDate(auction.endTime)}</p>
+        <p className="text-xs text-gray-500 mt-2">
+          {formatDate(auction.endTime)}
+        </p>
         <p className="text-sm font-semibold text-gray-700 mt-2">
           Start from {formatRupiah(auction.startingPrice)}
         </p>
 
-        {
-          auction.isCompleted && auction.bidWinner && (
-            <div className="flex items-center gap-2 mt-3 bg-gray-50 rounded-xl px-3 py-2">
-              <img
-                src={PersonImage}
-                alt="Winner"
-                className="w-8 h-8 rounded-full object-cover ring-2 ring-white"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src =
-                    "https://placehold.co/32x32/7c3aed/ffffff?text=P";
-                }}
-              />
-              <div>
-                <p className="text-[10px] text-gray-400 leading-none">
-                  Winner
-                </p>
-                <p className="text-xs font-semibold text-gray-700 leading-tight">
-                  {auction.bidWinner?.name}
-                </p>
-              </div>
+        {auction.isCompleted && auction.bidWinner && (
+          <div className="flex items-center gap-2 mt-3 bg-gray-50 rounded-xl px-3 py-2">
+            <img
+              src={PersonImage}
+              alt="Winner"
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-white"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src =
+                  "https://placehold.co/32x32/7c3aed/ffffff?text=P";
+              }}
+            />
+            <div>
+              <p className="text-[10px] text-gray-400 leading-none">Winner</p>
+              <p className="text-xs font-semibold text-gray-700 leading-tight">
+                {auction.bidWinner?.name}
+              </p>
             </div>
-          )
-        }
-
-
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
 
 function StatCard({
   label,
@@ -107,7 +102,6 @@ function StatCard({
     </div>
   );
 }
-
 
 function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
   return (
@@ -139,13 +133,18 @@ function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {bids.map((bid, index) => (
-              <tr key={bid.id} className="hover:bg-gray-50/60 transition-colors">
+              <tr
+                key={bid.id}
+                className="hover:bg-gray-50/60 transition-colors"
+              >
                 <td className="px-4 py-3 text-gray-700">
                   <div className="flex items-center gap-3">
                     <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center shrink-0">
                       {index + 1}
                     </span>
-                    <p className="text-sm font-medium text-gray-700">{bid.userName}</p>
+                    <p className="text-sm font-medium text-gray-700">
+                      {bid.userName}
+                    </p>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-center font-semibold text-gray-800">
@@ -167,13 +166,14 @@ function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
               <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center shrink-0">
                 {index + 1}
               </span>
-              <p className="text-sm font-medium text-gray-700">{bid.userName}</p>
+              <p className="text-sm font-medium text-gray-700">
+                {bid.userName}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-sm font-semibold text-gray-800">
                 {formatRupiah(bid.bidPrice)}
               </p>
-
             </div>
           </div>
         ))}
@@ -185,7 +185,7 @@ function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
 const AuctionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, user} = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const isAdmin = user?.role === "ADMIN";
 
   const [auction, setAuction] = useState<AuctionDetail | null>(null);
@@ -196,9 +196,9 @@ const AuctionDetailPage = () => {
 
   useEffect(() => {
     if (!id) return;
-    let isMounted = true; 
+    let isMounted = true;
     const fetchAuctionDetail = async () => {
-      setLoading(true); 
+      setLoading(true);
       try {
         const res = await auctionApi.getAuctionDetail(Number(id));
         if (isMounted) {
@@ -216,7 +216,7 @@ const AuctionDetailPage = () => {
     };
     fetchAuctionDetail();
     return () => {
-      isMounted = false; 
+      isMounted = false;
     };
   }, [id]);
 
@@ -288,8 +288,18 @@ const AuctionDetailPage = () => {
             onClick={() => navigate("/")}
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path
+                d="M19 12H5M12 5l-7 7 7 7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             Back
           </button>
@@ -302,20 +312,24 @@ const AuctionDetailPage = () => {
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-6">
-
           <aside className="w-full lg:w-72 shrink-0">
             <AuctionCard auction={auction} />
           </aside>
 
           <div className="flex-1 flex flex-col gap-5 min-w-0">
-
             <div className="flex flex-col sm:flex-row gap-4">
               <StatCard
                 label="Total Bids"
                 value={auction.totalBids}
                 unit="Bids"
                 icon={
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                     <polyline points="16 7 22 7 22 13" />
                   </svg>
@@ -326,7 +340,13 @@ const AuctionDetailPage = () => {
                 value={auction.totalBidders}
                 unit="Bidders"
                 icon={
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -343,13 +363,28 @@ const AuctionDetailPage = () => {
                 {isAdmin ? (
                   <div className="flex items-center gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm">
                     <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-amber-900">Admin Restricted</p>
-                      <p className="text-xs text-amber-700 mt-0.5">Admin accounts are not allowed to place bids on auctions.</p>
+                      <p className="text-sm font-semibold text-amber-900">
+                        Admin Restricted
+                      </p>
+                      <p className="text-xs text-amber-700 mt-0.5">
+                        Admin accounts are not allowed to place bids on
+                        auctions.
+                      </p>
                     </div>
                   </div>
                 ) : isAuthenticated ? (
@@ -389,13 +424,27 @@ const AuctionDetailPage = () => {
                   <div className="flex flex-col sm:flex-row justify-between items-center bg-blue-50/50 p-4 rounded-xl border border-blue-100 gap-4 shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                          />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-blue-900">Login Required</p>
-                        <p className="text-xs text-blue-700 mt-0.5">You must be logged in to place a bid on this item.</p>
+                        <p className="text-sm font-semibold text-blue-900">
+                          Login Required
+                        </p>
+                        <p className="text-xs text-blue-700 mt-0.5">
+                          You must be logged in to place a bid on this item.
+                        </p>
                       </div>
                     </div>
                     <button

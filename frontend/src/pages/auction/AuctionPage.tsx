@@ -1,52 +1,76 @@
 import { useState, useEffect } from "react";
-import { mockGetAuctions } from "./GetAuctionListMockApi";
-import type { Auction, Pagination as PaginationType } from "../../types";
+// import { mockGetAuctions } from "./GetAuctionListMockApi";
+import { useAppDispatch, useAppSelector } from "../../store/hooks"; // Sesuaikan path
+import { fetchAuctions } from "../../features/auctions/auctionsSlice"; // Sesuaikan path
 import AuctionCard from "../../components/auction/AuctionCard";
 import Pagination from "../../components/common/Pagination";
 
 const LIMIT = 10;
 
 const AuctionPage = () => {
-  const [auctions, setAuctions] = useState<Auction[]>([]);
-  const [pagination, setPagination] = useState<PaginationType | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // const [auctions, setAuctions] = useState<Auction[]>([]);
+  // const [pagination, setPagination] = useState<PaginationType | null>(null);
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
+
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const [isCompletedFilter, setIsCompletedFilter] = useState<
+  //   boolean | undefined
+  // >(undefined);
+
+  const dispatch = useAppDispatch();
+  const {
+    list: auctions,
+    pagination,
+    loading,
+    error,
+  } = useAppSelector((state) => state.auctions);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isCompletedFilter, setIsCompletedFilter] = useState<
     boolean | undefined
   >(undefined);
 
+  // useEffect(() => {
+  //   let isCancelled = false;
+
+  //   async function loadAuctions() {
+  //     setLoading(true);
+  //     setError(null);
+
+  //     try {
+  //       const response = await mockGetAuctions({
+  //         page: currentPage,
+  //         limit: LIMIT,
+  //         isCompleted: isCompletedFilter,
+  //       });
+
+  //       if (!isCancelled) {
+  //         setAuctions(response.data);
+  //         setPagination(response.pagination);
+  //       }
+  //     } catch (err) {
+  //       if (!isCancelled) setError("Gagal memuat data auction");
+  //     } finally {
+  //       if (!isCancelled) setLoading(false);
+  //     }
+  //   }
+
+  //   loadAuctions();
+  //   return () => {
+  //     isCancelled = true;
+  //   };
+  // }, [currentPage, isCompletedFilter]);
+
   useEffect(() => {
-    let isCancelled = false;
-
-    async function loadAuctions() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await mockGetAuctions({
-          page: currentPage,
-          limit: LIMIT,
-          isCompleted: isCompletedFilter,
-        });
-
-        if (!isCancelled) {
-          setAuctions(response.data);
-          setPagination(response.pagination);
-        }
-      } catch (err) {
-        if (!isCancelled) setError("Gagal memuat data auction");
-      } finally {
-        if (!isCancelled) setLoading(false);
-      }
-    }
-
-    loadAuctions();
-    return () => {
-      isCancelled = true;
-    };
-  }, [currentPage, isCompletedFilter]);
+    dispatch(
+      fetchAuctions({
+        page: currentPage,
+        limit: LIMIT,
+        isCompleted: isCompletedFilter,
+      }),
+    );
+  }, [currentPage, isCompletedFilter, dispatch]);
 
   const handleFilterChange = (value: string) => {
     if (value === "all") setIsCompletedFilter(undefined);
