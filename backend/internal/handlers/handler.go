@@ -8,20 +8,23 @@ import (
 )
 
 type Handler struct {
-	authService    services.AuthService
-	auctionService services.AuctionService
+	authService          services.AuthService
+	auctionService       services.AuctionService
 	auctionDetailService services.AuctionDetailService
+	bidService           services.BidService
 }
 
 func New(
-	authService services.AuthService, 
+	authService services.AuthService,
 	auctionService services.AuctionService,
 	auctionDetailService services.AuctionDetailService,
-	) *Handler {
+	bidService services.BidService,
+) *Handler {
 	return &Handler{
 		authService:          authService,
 		auctionService:       auctionService,
 		auctionDetailService: auctionDetailService,
+		bidService:           bidService,
 	}
 }
 
