@@ -17,6 +17,7 @@ import (
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/repository"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/routes"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+	wsh "github.com/grup-baru-belajar/auction-bid-repo/internal/websocket"
 )
 
 const (
@@ -66,12 +67,16 @@ var serveCmd = &cobra.Command{
 		bidService := services.NewBidService(bidRepo)
 		reportingService := services.NewReportingService(reportingRepo)
 
+		wsHub := wsh.NewHub()
+		wsHandler := wsh.NewHandler(wsHub, auctionDetailRepo)
+
 		handler := handlers.New(
 			authService,
 			auctionService,
 			auctionDetailService,
 			bidService,
 			reportingService,
+			wsHandler,
 		)
 
 		if cfg.App.Env != "development" {
@@ -79,7 +84,7 @@ var serveCmd = &cobra.Command{
 		}
 		router := gin.Default()
 		router.Use(middlewares.CORS(cfg.App.CORSOrigins))
-		routes.Setup(router, handler, tokenManager)
+		routes.Setup(router, handler, tokenManager, wsHandler)
 
 		srv := &http.Server{
 			Addr:              fmt.Sprintf(":%d", cfg.App.Port),

@@ -5,6 +5,7 @@ import (
 
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/models"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+	wsh "github.com/grup-baru-belajar/auction-bid-repo/internal/websocket"
 )
 
 type Handler struct {
@@ -13,6 +14,7 @@ type Handler struct {
 	auctionDetailService services.AuctionDetailService
 	bidService           services.BidService
 	reportingService     services.ReportingService
+	wsHandler            *wsh.Handler
 }
 
 func New(
@@ -21,6 +23,7 @@ func New(
 	auctionDetailService services.AuctionDetailService,
 	bidService services.BidService,
 	reportingService services.ReportingService,
+	wsHandler *wsh.Handler,
 ) *Handler {
 	return &Handler{
 		authService:          authService,
@@ -28,6 +31,7 @@ func New(
 		auctionDetailService: auctionDetailService,
 		bidService:           bidService,
 		reportingService:     reportingService,
+		wsHandler:            wsHandler,
 	}
 }
 
