@@ -6,9 +6,10 @@ import (
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/handlers"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/middlewares"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+	wsh "github.com/grup-baru-belajar/auction-bid-repo/internal/websocket"
 )
 
-func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *services.TokenManager) {
+func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *services.TokenManager, wsHandler *wsh.Handler) {
 	api := r.Group("/api/v1")
 	api.POST("/login", h.PostLogin)
 
@@ -22,4 +23,5 @@ func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *services.TokenManag
 	api.GET("/reporting/auction-activity", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetAuctionActivity)
 	api.GET("/reporting/auction-status", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetAuctionStatus)
 
+	r.GET("/ws/auctions/:id/top-bids", wsHandler.ServeHTTP)
 }

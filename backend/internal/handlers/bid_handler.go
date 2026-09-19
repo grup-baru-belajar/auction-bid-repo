@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -40,6 +41,8 @@ func (h *Handler) PostBid(c *gin.Context) {
 		respondWithError(c, err)
 		return
 	}
+
+	go h.wsHandler.BroadcastTopBids(context.Background(), req.AuctionID)
 
 	respondSuccess(c, http.StatusCreated, "Bid placed successfully", result)
 }
