@@ -3,11 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import type { AuctionDetail } from "../../types";
 import { auctionApi, bidApi } from "../../services/api";
 
-import PersonImage from "../../assets/person.png"
+import PersonImage from "../../assets/person.png";
 
-
-const formatRupiah = (value: number) =>
-  "Rp " + new Intl.NumberFormat("id-ID").format(value);
+const formatRupiah = (value: number | string) => {
+  const num = typeof value === "string" ? Number(value) : value;
+  return "Rp" + new Intl.NumberFormat("id-ID").format(num);
+};
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", {
@@ -15,7 +16,6 @@ const formatDate = (iso: string) =>
     month: "short",
     year: "numeric",
   });
-
 
 function AuctionCard({ auction }: { auction: AuctionDetail }) {
   return (
@@ -44,41 +44,36 @@ function AuctionCard({ auction }: { auction: AuctionDetail }) {
         <h2 className="text-base font-bold text-gray-800 leading-tight">
           {auction.auctionName}
         </h2>
-        <p className="text-xs text-gray-500 mt-2">{formatDate(auction.endTime)}</p>
+        <p className="text-xs text-gray-500 mt-2">
+          {formatDate(auction.endTime)}
+        </p>
         <p className="text-sm font-semibold text-gray-700 mt-2">
           Start from {formatRupiah(auction.startingPrice)}
         </p>
 
-        {
-          auction.isCompleted && auction.bidWinner && (
-            <div className="flex items-center gap-2 mt-3 bg-gray-50 rounded-xl px-3 py-2">
-              <img
-                src={PersonImage}
-                alt="Winner"
-                className="w-8 h-8 rounded-full object-cover ring-2 ring-white"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src =
-                    "https://placehold.co/32x32/7c3aed/ffffff?text=P";
-                }}
-              />
-              <div>
-                <p className="text-[10px] text-gray-400 leading-none">
-                  Winner
-                </p>
-                <p className="text-xs font-semibold text-gray-700 leading-tight">
-                  {auction.bidWinner?.name}
-                </p>
-              </div>
+        {auction.isCompleted && auction.bidWinner && (
+          <div className="flex items-center gap-2 mt-3 bg-gray-50 rounded-xl px-3 py-2">
+            <img
+              src={PersonImage}
+              alt="Winner"
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-white"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src =
+                  "https://placehold.co/32x32/7c3aed/ffffff?text=P";
+              }}
+            />
+            <div>
+              <p className="text-[10px] text-gray-400 leading-none">Winner</p>
+              <p className="text-xs font-semibold text-gray-700 leading-tight">
+                {auction.bidWinner?.name}
+              </p>
             </div>
-          )
-        }
-
-
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
 
 function StatCard({
   label,
@@ -106,7 +101,6 @@ function StatCard({
     </div>
   );
 }
-
 
 function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
   return (
@@ -138,13 +132,18 @@ function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {bids.map((bid, index) => (
-              <tr key={bid.id} className="hover:bg-gray-50/60 transition-colors">
+              <tr
+                key={bid.id}
+                className="hover:bg-gray-50/60 transition-colors"
+              >
                 <td className="px-4 py-3 text-gray-700">
                   <div className="flex items-center gap-3">
                     <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center shrink-0">
                       {index + 1}
                     </span>
-                    <p className="text-sm font-medium text-gray-700">{bid.userName}</p>
+                    <p className="text-sm font-medium text-gray-700">
+                      {bid.userName}
+                    </p>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-center font-semibold text-gray-800">
@@ -166,13 +165,14 @@ function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
               <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center shrink-0">
                 {index + 1}
               </span>
-              <p className="text-sm font-medium text-gray-700">{bid.userName}</p>
+              <p className="text-sm font-medium text-gray-700">
+                {bid.userName}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-sm font-semibold text-gray-800">
                 {formatRupiah(bid.bidPrice)}
               </p>
-
             </div>
           </div>
         ))}
@@ -268,8 +268,18 @@ const AuctionDetailPage = () => {
             onClick={() => navigate("/")}
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path
+                d="M19 12H5M12 5l-7 7 7 7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             Back
           </button>
@@ -282,20 +292,24 @@ const AuctionDetailPage = () => {
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-6">
-
           <aside className="w-full lg:w-72 shrink-0">
             <AuctionCard auction={auction} />
           </aside>
 
           <div className="flex-1 flex flex-col gap-5 min-w-0">
-
             <div className="flex flex-col sm:flex-row gap-4">
               <StatCard
                 label="Total Bids"
                 value={auction.totalBids}
                 unit="Bids"
                 icon={
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                     <polyline points="16 7 22 7 22 13" />
                   </svg>
@@ -306,7 +320,13 @@ const AuctionDetailPage = () => {
                 value={auction.totalBidders}
                 unit="Bidders"
                 icon={
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -318,8 +338,8 @@ const AuctionDetailPage = () => {
 
             <TopBidderTable bids={auction.topBids} />
 
-            {
-              !auction.isCompleted && <div className="space-y-1.5">
+            {!auction.isCompleted && (
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all bg-white shadow-sm">
                     <span className="pl-4 pr-2 text-sm font-medium text-gray-400 select-none">
@@ -356,7 +376,7 @@ const AuctionDetailPage = () => {
                   <p className="text-xs text-red-500 pl-1">{bidError}</p>
                 )}
               </div>
-            }
+            )}
           </div>
         </div>
       </main>
