@@ -28,6 +28,9 @@ export interface Auction {
 /** Auction detail as returned by GET /auctions/{id} — includes topBids */
 export interface AuctionDetail extends Auction {
   topBids: TopBid[];
+  totalBids: number;
+  totalBidders: number;
+
 }
 
 /** Request body for POST /auctions */
