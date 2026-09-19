@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks'; 
 import { login } from '../../features/auth/authSlice';
+import toast from 'react-hot-toast';
 
-const LoginPage: React.FC = () => {
+const useLoginController = () => {
   const navigate = useNavigate();
-  
-  // Ambil state loading dan error dari Redux
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.auth);
 
@@ -21,14 +20,26 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       await dispatch(login(formData)).unwrap();
+      toast.success('Login berhasil! 👋');
       navigate('/');
     } catch (err) {
-      console.error('Login gagal:', err);
+      toast.error(err as string || 'Login gagal');
     }
   };
+
+  return {
+    formData,
+    loading,
+    error,
+    handleChange,
+    handleSubmit
+  };
+};
+
+const LoginPage: React.FC = () => {
+  const { formData, loading, handleChange, handleSubmit } = useLoginController();
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center items-center p-4 sm:p-8">
@@ -52,11 +63,11 @@ const LoginPage: React.FC = () => {
             </p>
           </div>
 
-          {error && (
+          {/* {error && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm rounded">
               {error}
             </div>
-          )}
+          )} */}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -110,7 +121,6 @@ const LoginPage: React.FC = () => {
             </div>
           </form>
         </div>
-        
       </div>
     </div>
   );
