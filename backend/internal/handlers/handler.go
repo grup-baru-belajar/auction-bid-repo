@@ -10,12 +10,18 @@ import (
 type Handler struct {
 	authService    services.AuthService
 	auctionService services.AuctionService
+	auctionDetailService services.AuctionDetailService
 }
 
-func New(authService services.AuthService, auctionService services.AuctionService) *Handler {
+func New(
+	authService services.AuthService, 
+	auctionService services.AuctionService,
+	auctionDetailService services.AuctionDetailService,
+	) *Handler {
 	return &Handler{
-		authService:    authService,
-		auctionService: auctionService,
+		authService:          authService,
+		auctionService:       auctionService,
+		auctionDetailService: auctionDetailService,
 	}
 }
 
