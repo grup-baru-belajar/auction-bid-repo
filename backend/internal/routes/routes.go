@@ -15,5 +15,5 @@ func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *services.TokenManag
 	api.GET("/auctions", h.GetAuctions)
 	api.GET("/auctions/:id", h.GetAuctionByID)
 	api.POST("/auctions", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.PostAuction)
-
+	api.POST("/bid", middlewares.Auth(tokenManager), h.PostBid)
 }

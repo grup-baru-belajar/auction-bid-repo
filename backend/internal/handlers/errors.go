@@ -52,6 +52,12 @@ func respondWithError (c *gin.Context, err error) {
 	case errors.Is(err, services.ErrInvalidEndTime):
 		respondError(c, http.StatusBadRequest, err.Error())
 
+	case errors.Is(err, services.ErrBidTooLow):
+		respondError(c, http.StatusBadRequest, err.Error())
+
+	case errors.Is(err, services.ErrAuctionCompleted):
+		respondError(c, http.StatusConflict, "Auction already completed")
+
 	default:
 		log.Printf("unhandled error on %s %s: %v", c.Request.Method, c.Request.URL.Path, err)
 		respondError(c, http.StatusInternalServerError, "Internal server error")
