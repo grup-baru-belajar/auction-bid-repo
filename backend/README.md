@@ -59,6 +59,7 @@ docker compose exec -T postgres \
 Isinya 5 user, 5 lelang, dan 11 bid. Passwordnya `admin` → `admin123`,
 sisanya → `password123`.
 
+
 ## 5. Jalankan servernya
 
 ```bash
