@@ -12,6 +12,7 @@ type ReportingRepository interface {
 	GetAuctionActivity(ctx context.Context) ([]models.AuctionActivity, error)
 	GetAuctionStatus(ctx context.Context) ([]models.AuctionStatus, error)
 	GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error)
+	GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error)
 }
 
 type reportingRepository struct {
@@ -179,35 +180,47 @@ func (r *reportingRepository) GetTotalBidders(ctx context.Context, interval stri
 	query := `
 		SELECT COUNT(DISTINCT user_id) AS total_bidders
 		FROM bids
-		WHERE created_at::DATE >= CURRENT_DATE - $1::INTERVAL
+		WHERE created_at >= CURRENT_DATE - CAST($1 AS INTERVAL)
 	`
 	if auctionId != "" {
 		query += ` AND auction_id = $2`
 	}
 	query += ";"
-	var rows *sql.Rows
+	var row *sql.Row
 	var err error
 	if auctionId != "" {
-		rows, err = r.db.QueryContext(ctx, query, interval, auctionId)
+		row = r.db.QueryRowContext(ctx, query, interval, auctionId)
 	} else {
-		rows, err = r.db.QueryContext(ctx, query, interval)
+		row = r.db.QueryRowContext(ctx, query, interval)
 	}
 	if err != nil {
 		return 0, err
 	}
-	defer rows.Close()
 
 	var totalBidders int
-	if rows.Next() {
-		err := rows.Scan(&totalBidders)
-		if err != nil {
-			return 0, err
-		}
-	}
-	
-	if err := rows.Err(); err != nil {
+	if err := row.Scan(&totalBidders); err != nil {
 		return 0, err
 	}
 
 	return totalBidders, nil
+}
+
+/*
+- count total transaction happen in an interval of time
+- sum total gross sales in an interval of time
+*/
+func (r *reportingRepository) GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error) {
+	query := `
+		SELECT COUNT(*) AS transaction_count, COALESCE(SUM(last_price), 0) AS total_gross_sales
+		FROM auctions
+		WHERE created_at >= CURRENT_DATE - CAST($1 AS INTERVAL) AND is_completed = TRUE AND end_time <= CURRENT_TIMESTAMP;
+	`
+	row := r.db.QueryRowContext(ctx, query, interval)
+
+	var totalTransactions models.TotalTransaction
+	if err := row.Scan(&totalTransactions.TransactionCount, &totalTransactions.TotalGrossSales); err != nil {
+		return models.TotalTransaction{}, err
+	}
+
+	return totalTransactions, nil
 }
