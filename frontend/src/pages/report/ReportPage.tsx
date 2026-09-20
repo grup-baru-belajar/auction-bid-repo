@@ -1,11 +1,26 @@
+import { Sidebar, SidebarItem } from "../../components/common/Sidebar";
+import { BarChart2, Gavel } from "lucide-react";
+import { Outlet } from "react-router-dom";
+
 const ReportPage = () => {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-2xl shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Ini adalah halaman Report
-        </h1>
-      </div>
+    <div className="flex h-screen">
+      <Sidebar>
+        <SidebarItem
+          to="/report/analytics"
+          icon={<BarChart2 size={20} />}
+          text="Analytics"
+        />
+        <SidebarItem
+          to="/report/auction"
+          icon={<Gavel size={20} />}
+          text="Auction"
+        />
+      </Sidebar>
+
+      <main className="flex-1 overflow-y-auto p-6">
+        <Outlet />
+      </main>
     </div>
   );
 };
