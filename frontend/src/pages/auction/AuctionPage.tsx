@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   fetchAuctions,
@@ -25,6 +26,9 @@ const AuctionPage = () => {
 
   const { user } = useAppSelector((state) => state.auth);
   const isAdmin = user?.role === "ADMIN";
+
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get("search") ?? "";
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isCompletedFilter, setIsCompletedFilter] = useState<
@@ -59,9 +63,15 @@ const AuctionPage = () => {
         page: currentPage,
         limit: LIMIT,
         isCompleted: isCompletedFilter,
+        search: search || undefined,
       }),
     );
-  }, [currentPage, isCompletedFilter, dispatch]);
+  }, [currentPage, isCompletedFilter, search, dispatch]);
+
+  // error
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   useEffect(() => {
     return () => {

@@ -3,9 +3,22 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
+
+func queryIntDefault(c *gin.Context, key string, def int) int {
+	raw := c.Query(key)
+	if raw == "" {
+		return def
+	}
+	v, err := strconv.Atoi(raw)
+	if err != nil || v <= 0 {
+		return def
+	}
+	return v
+}
 
 func (h *Handler) GetTopAuction(c *gin.Context) {
 	auctions, err := h.reportingService.GetTopAuction(c, 5)
@@ -25,7 +38,8 @@ func (h *Handler) GetTopAuction(c *gin.Context) {
 }
 
 func (h *Handler) GetAuctionActivity(c *gin.Context) {
-	activities, err := h.reportingService.GetAuctionActivity(c.Request.Context())
+	interval := queryIntDefault(c, "interval", 7)
+	activities, err := h.reportingService.GetAuctionActivity(c.Request.Context(), interval)
 
 	if err != nil {
 		log.Printf("GetAuctionActivity error: %v", err)
@@ -41,6 +55,27 @@ func (h *Handler) GetAuctionActivity(c *gin.Context) {
 		"success": true,
 		"message": "Auction activity retrieved successfully",
 		"data":    activities,
+	})
+}
+
+func (h *Handler) GetTransactionOverview(c *gin.Context) {
+	weeks := queryIntDefault(c, "weeks", 4)
+	overview, err := h.reportingService.GetTransactionOverview(c.Request.Context(), weeks)
+
+	if err != nil {
+		log.Printf("GetTransactionOverview error: %v", err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get transaction overview",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Transaction overview retrieved successfully",
+		"data":    overview,
 	})
 }
 
@@ -69,7 +104,9 @@ func (h *Handler) GetTotalBidders(c *gin.Context) {
 	if interval == "" {
 		interval = "7"
 	}
-	interval = interval + " days"
+	if interval != "all" {
+		interval = interval + " days"
+	}
 	auctionId := c.Query("auctionId")
 
 	totalBidders, err := h.reportingService.GetTotalBidders(c.Request.Context(), interval, auctionId)
@@ -113,5 +150,23 @@ func (h *Handler) GetTotalTransaction(c *gin.Context) {
 		"success": true,
 		"message": "Total transactions retrieved successfully",
 		"data":    totalTransactions,
+	})
+}
+
+func (h *Handler) GetAuctionSummary(c *gin.Context) {
+	summary, err := h.reportingService.GetAuctionSummary(c.Request.Context())
+	if err != nil {
+		log.Printf("GetAuctionSummary error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get auction summary",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Auction summary retrieved successfully",
+		"data":    summary,
 	})
 }
