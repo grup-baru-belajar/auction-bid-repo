@@ -152,6 +152,7 @@ func (h *Handler) GetTotalTransaction(c *gin.Context) {
 		"data":    totalTransactions,
 	})
 }
+
 func (h *Handler) GetAuctionSummary(c *gin.Context) {
 	summary, err := h.reportingService.GetAuctionSummary(c.Request.Context())
 	if err != nil {
