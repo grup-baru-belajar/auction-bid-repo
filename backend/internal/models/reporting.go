@@ -45,3 +45,10 @@ type AuctionSummary struct {
 	TotalBidsCompleted int64 `json:"totalBidsCompleted"`
 	TotalBidsAll       int64 `json:"totalBidsAll"`
 }
+type TopSpenderBidder struct {
+	UserID          int64   `json:"user_id"`
+	Username        string  `json:"username"`
+	Name            string  `json:"name"`
+	TotalMoneySpent decimal.Decimal `json:"total_money_spent"`
+	LastBidAgo      string  `json:"last_bid_ago"`
+}
