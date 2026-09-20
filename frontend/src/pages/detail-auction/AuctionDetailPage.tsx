@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import type { AuctionDetail } from "../../types";
-import { auctionApi, bidApi } from "../../services/api";
+import type { AuctionDetail, TopBid, TopBidsWsMessage } from "../../types";
+import { auctionApi, bidApi, wsUrl } from "../../services/api";
 import { useAppSelector } from "../../store/hooks";
 import { toast } from "react-hot-toast";
 import PersonImage from "../../assets/person.png";
@@ -12,10 +12,13 @@ const formatRupiah = (value: number | string) => {
 };
 
 const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-GB", {
+  new Date(iso).toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
   });
 
 function AuctionCard({ auction }: { auction: AuctionDetail }) {
@@ -46,7 +49,7 @@ function AuctionCard({ auction }: { auction: AuctionDetail }) {
           {auction.auctionName}
         </h2>
         <p className="text-xs text-gray-500 mt-2">
-          {formatDate(auction.endTime)}
+          End Time: {formatDate(auction.endTime)}
         </p>
         <p className="text-sm font-semibold text-gray-700 mt-2">
           Start from {formatRupiah(auction.startingPrice)}
@@ -111,12 +114,7 @@ function TopBidderTable({ bids }: { bids: AuctionDetail["topBids"] }) {
           <h3 className="text-sm font-bold text-gray-800">Top Bidder</h3>
           <p className="text-xs text-gray-400 mt-2">Highest Bidder right now</p>
         </div>
-        <button
-          id="view-all-bidders-btn"
-          className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors whitespace-nowrap"
-        >
-          See All Bidder →
-        </button>
+
       </div>
 
       <div className="hidden lg:block overflow-x-auto">
@@ -194,6 +192,12 @@ const AuctionDetailPage = () => {
   const [bidError, setBidError] = useState("");
   const [bidLoading, setBidLoading] = useState(false);
 
+  // Live data driven by WebSocket
+  const [liveTopBids, setLiveTopBids] = useState<TopBid[] | null>(null);
+  const [liveTotalBids, setLiveTotalBids] = useState<number | null>(null);
+  const [liveTotalBidders, setLiveTotalBidders] = useState<number | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+
   useEffect(() => {
     if (!id) return;
     let isMounted = true;
@@ -217,6 +221,38 @@ const AuctionDetailPage = () => {
     fetchAuctionDetail();
     return () => {
       isMounted = false;
+    };
+  }, [id]);
+
+  // WebSocket: subscribe to live top-bids updates
+  useEffect(() => {
+    if (!id) return;
+
+    const ws = new WebSocket(wsUrl(`/ws/auctions/${id}/top-bids`));
+    wsRef.current = ws;
+
+    ws.onmessage = (event) => {
+      try {
+        const msg: TopBidsWsMessage = JSON.parse(event.data as string);
+        setLiveTopBids(msg.topBids);
+        setLiveTotalBids(msg.totalBids);
+        setLiveTotalBidders(msg.totalBidders);
+      } catch {
+        // ignore malformed frames
+      }
+    };
+
+    ws.onerror = (err) => {
+      console.warn("WS error:", err);
+    };
+
+    return () => {
+      ws.close();
+      wsRef.current = null;
+      // reset live state when leaving the page
+      setLiveTopBids(null);
+      setLiveTotalBids(null);
+      setLiveTotalBidders(null);
     };
   }, [id]);
 
@@ -320,7 +356,7 @@ const AuctionDetailPage = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <StatCard
                 label="Total Bids"
-                value={auction.totalBids}
+                value={liveTotalBids ?? auction.totalBids}
                 unit="Bids"
                 icon={
                   <svg
@@ -337,7 +373,7 @@ const AuctionDetailPage = () => {
               />
               <StatCard
                 label="Total Bidders"
-                value={auction.totalBidders}
+                value={liveTotalBidders ?? auction.totalBidders}
                 unit="Bidders"
                 icon={
                   <svg
@@ -356,7 +392,7 @@ const AuctionDetailPage = () => {
               />
             </div>
 
-            <TopBidderTable bids={auction.topBids} />
+            <TopBidderTable bids={liveTopBids ?? auction.topBids} />
 
             {!auction.isCompleted && (
               <div className="space-y-1.5">
