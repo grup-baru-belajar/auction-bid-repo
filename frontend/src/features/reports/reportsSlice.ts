@@ -5,6 +5,7 @@ import type {
   AuctionActivity,
   AuctionStatusCount,
   TransactionWeek,
+  TopAuction,
 } from "../../types";
 import { AxiosError } from "axios";
 
@@ -29,6 +30,9 @@ interface ReportsState {
 
   transactionOverview: TransactionWeek[] | null;
   transactionError: string | null;
+
+  topAuctions: TopAuction[] | null;
+  topAuctionsError: string | null;
 }
 
 const initialState: ReportsState = {
@@ -49,6 +53,9 @@ const initialState: ReportsState = {
 
   transactionOverview: null,
   transactionError: null,
+
+  topAuctions: null,
+  topAuctionsError: null,
 };
 
 // GET /reporting/auction-summary
@@ -136,6 +143,23 @@ export const fetchTransactionOverview = createAsyncThunk<
   }
 });
 
+// GET /reporting/top-auction
+export const fetchTopAuctions = createAsyncThunk<
+  TopAuction[],
+  void,
+  { rejectValue: string }
+>("reports/fetchTopAuctions", async (_, { rejectWithValue }) => {
+  try {
+    const response = await reportApi.getTopAuctions();
+    return response.data.data;
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to fetch top auctions",
+    );
+  }
+});
+
 const reportsSlice = createSlice({
   name: "reports",
   initialState,
@@ -192,6 +216,13 @@ const reportsSlice = createSlice({
       .addCase(fetchTransactionOverview.rejected, (state, action) => {
         state.transactionError =
           action.payload || "Failed to fetch transaction overview";
+      })
+      .addCase(fetchTopAuctions.fulfilled, (state, action) => {
+        state.topAuctions = action.payload;
+      })
+      .addCase(fetchTopAuctions.rejected, (state, action) => {
+        state.topAuctionsError =
+          action.payload || "Failed to fetch top auctions";
       });
   },
 });

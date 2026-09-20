@@ -47,11 +47,11 @@ const TransactionOverviewChart = ({
       }
     >
       {loading ? (
-        <div className="h-[208px] flex items-center justify-center text-sm text-slate-400">
+        <div className="h-52 flex items-center justify-center text-sm text-slate-400">
           Loading...
         </div>
       ) : chartData.length === 0 ? (
-        <div className="h-[208px] flex items-center justify-center text-sm text-slate-400">
+        <div className="h-52 flex items-center justify-center text-sm text-slate-400">
           No completed transactions yet.
         </div>
       ) : (
