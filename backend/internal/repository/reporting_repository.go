@@ -13,6 +13,7 @@ type ReportingRepository interface {
 	GetAuctionStatus(ctx context.Context) ([]models.AuctionStatus, error)
 	GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error)
 	GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error)
+	GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error)
 }
 
 type reportingRepository struct {
@@ -171,8 +172,6 @@ func (r *reportingRepository) GetAuctionStatus(ctx context.Context) ([]models.Au
 	return statuses, nil
 }
 
-
-
 /*
 1. get total bidders from every aution and 1 auction in the last x date
 */
@@ -223,4 +222,46 @@ func (r *reportingRepository) GetTotalTransaction(ctx context.Context, interval 
 	}
 
 	return totalTransactions, nil
+}
+
+func (r *reportingRepository) GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error) {
+	query := `
+		SELECT
+			(SELECT COUNT(*) FROM auctions) AS total_auctions,
+
+			(SELECT COUNT(*) FROM auctions
+			 WHERE is_completed IS DISTINCT FROM TRUE
+			   AND end_time > NOW()) AS ongoing_auctions,
+
+			(SELECT COUNT(*) FROM auctions
+			 WHERE is_completed IS TRUE
+				OR end_time <= NOW()) AS completed_auctions,
+
+			(SELECT COUNT(b.id) FROM auctions a
+			 JOIN bids b ON b.auction_id = a.id
+			 WHERE a.is_completed IS DISTINCT FROM TRUE
+			   AND a.end_time > NOW()) AS total_bids_ongoing,
+
+			(SELECT COUNT(b.id) FROM auctions a
+			 JOIN bids b ON b.auction_id = a.id
+			 WHERE a.is_completed IS TRUE
+				OR a.end_time <= NOW()) AS total_bids_completed,
+
+			(SELECT COUNT(*) FROM bids) AS total_bids_all
+	`
+
+	var s models.AuctionSummary
+	err := r.db.QueryRowContext(ctx, query).Scan(
+		&s.TotalAuctions,
+		&s.OngoingAuctions,
+		&s.CompletedAuctions,
+		&s.TotalBidsOngoing,
+		&s.TotalBidsCompleted,
+		&s.TotalBidsAll,
+	)
+	if err != nil {
+		return s, err
+	}
+
+	return s, nil
 }

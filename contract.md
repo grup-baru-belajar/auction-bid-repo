@@ -396,6 +396,198 @@ Content-Type: application/json
 
 ---
 
+# 6. Reporting
+
+Endpoint untuk dashboard reporting/analytics. Semua endpoint di bawah ini **ADMIN only** dan memerlukan JWT Bearer Token.
+
+## 6.1 Get Top Auctions
+
+### GET /reporting/top-auction
+
+Mengambil 5 auction dengan jumlah bid terbanyak.
+
+### Authorization
+
+ADMIN only.
+
+### Request
+
+```http
+GET /reporting/top-auction
+Authorization: Bearer <token>
+```
+
+### Response 200
+
+```json
+{
+  "success": true,
+  "message": "Top auctions retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "auctionName": "iPhone 15 Pro",
+      "startingPrice": 10000000,
+      "highestBid": 16000000,
+      "totalBid": 12,
+      "bidders": 5,
+      "status": "ACTIVE"
+    }
+  ]
+}
+```
+
+### Notes
+
+- `status` bernilai `"ACTIVE"` atau `"ENDED"`, dihitung dari `is_completed` dan `end_time`.
+- Diurutkan berdasarkan `totalBid DESC`, dibatasi 5 hasil.
+
+---
+
+## 6.2 Get Auction Activity
+
+### GET /reporting/auction-activity
+
+Mengambil jumlah bid per hari untuk 7 hari terakhir.
+
+### Authorization
+
+ADMIN only.
+
+### Request
+
+```http
+GET /reporting/auction-activity
+Authorization: Bearer <token>
+```
+
+### Response 200
+
+```json
+{
+  "success": true,
+  "message": "Auction activity retrieved successfully",
+  "data": [
+    {
+      "date": "2026-09-14",
+      "totalBids": 8
+    },
+    {
+      "date": "2026-09-15",
+      "totalBids": 3
+    }
+  ]
+}
+```
+
+### Notes
+
+- Hanya mengembalikan tanggal yang memiliki bid (tidak mengisi tanggal kosong dengan 0).
+- Diurutkan `date ASC`.
+
+---
+
+## 6.3 Get Auction Status
+
+### GET /reporting/auction-status
+
+Mengambil jumlah auction per status (ACTIVE / ENDED).
+
+### Authorization
+
+ADMIN only.
+
+### Request
+
+```http
+GET /reporting/auction-status
+Authorization: Bearer <token>
+```
+
+### Response 200
+
+```json
+{
+  "success": true,
+  "message": "Auction status retrieved successfully",
+  "data": [
+    {
+      "status": "ACTIVE",
+      "total": 7
+    },
+    {
+      "status": "ENDED",
+      "total": 3
+    }
+  ]
+}
+```
+
+---
+
+## 6.4 Get Auction Summary
+
+### GET /reporting/auction-summary
+
+Mengambil ringkasan agregat seluruh auction dan bid.
+
+### Authorization
+
+ADMIN only.
+
+### Request
+
+```http
+GET /reporting/auction-summary
+Authorization: Bearer <token>
+```
+
+### Response 200
+
+```json
+{
+  "success": true,
+  "message": "Auction summary retrieved successfully",
+  "data": {
+    "totalAuctions": 10,
+    "ongoingAuctions": 7,
+    "completedAuctions": 3,
+    "totalBidsOngoing": 25,
+    "totalBidsCompleted": 15,
+    "totalBidsAll": 40
+  }
+}
+```
+
+---
+
+## Reporting Error Responses
+
+### Response 401
+
+```json
+{
+  "success": false,
+  "message": "Unauthorized"
+}
+```
+
+### Response 403
+
+```json
+{
+  "success": false,
+  "message": "Only admin can create auction"
+}
+```
+
+### Notes
+
+- Pesan 403 di atas memang generik (dipakai ulang dari middleware `RequireAdmin`), bukan pesan khusus reporting.
+- Response 500 mengikuti format standar dengan pesan spesifik per endpoint, contoh: `"Failed to get auction summary"`.
+
+---
+
 # Database Schema
 
 ## Users

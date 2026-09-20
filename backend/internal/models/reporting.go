@@ -26,3 +26,14 @@ type TotalTransaction struct {
 	TransactionCount string `json:"transactionCount"`
 	TotalGrossSales decimal.Decimal  `json:"totalGrossSales"`
 }
+
+// AuctionSummary is the aggregate snapshot returned by GET /reporting/auction-summary
+// and broadcast to reporting WebSocket clients after each bid.
+type AuctionSummary struct {
+	TotalAuctions      int64 `json:"totalAuctions"`
+	OngoingAuctions    int64 `json:"ongoingAuctions"`
+	CompletedAuctions  int64 `json:"completedAuctions"`
+	TotalBidsOngoing   int64 `json:"totalBidsOngoing"`
+	TotalBidsCompleted int64 `json:"totalBidsCompleted"`
+	TotalBidsAll       int64 `json:"totalBidsAll"`
+}

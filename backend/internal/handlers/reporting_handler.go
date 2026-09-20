@@ -115,3 +115,20 @@ func (h *Handler) GetTotalTransaction(c *gin.Context) {
 		"data":    totalTransactions,
 	})
 }
+func (h *Handler) GetAuctionSummary(c *gin.Context) {
+	summary, err := h.reportingService.GetAuctionSummary(c.Request.Context())
+	if err != nil {
+		log.Printf("GetAuctionSummary error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get auction summary",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Auction summary retrieved successfully",
+		"data":    summary,
+	})
+}

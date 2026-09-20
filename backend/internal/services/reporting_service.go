@@ -13,6 +13,7 @@ type ReportingService interface {
 	GetAuctionStatus(ctx context.Context) ([]models.AuctionStatus, error)
 	GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error)
 	GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error)
+	GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error)
 }
 
 type reportingService struct {
@@ -41,4 +42,7 @@ func (s *reportingService) GetTotalBidders(ctx context.Context, interval string,
 
 func (s *reportingService) GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error) {
 	return s.repo.GetTotalTransaction(ctx, interval)
+}
+func (s *reportingService) GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error) {
+	return s.repo.GetAuctionSummary(ctx)
 }
