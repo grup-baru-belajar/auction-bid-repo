@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -70,34 +69,23 @@ type cloudinaryDeleteResponse struct {
 }
 
 func (s *cloudinaryService) Upload(file *multipart.FileHeader) (*UploadResult, error) {
-	log.Printf("[Cloudinary] Upload start: filename=%s, size=%d", file.Filename, file.Size)
-
 	if file.Size > 1*1024*1024 {
 		return nil, ErrImageTooLarge
 	}
 
 	src, err := file.Open()
 	if err != nil {
-		log.Printf("[Cloudinary] Failed to open file: %v", err)
 		return nil, ErrInvalidImageFile
 	}
 	defer src.Close()
 
 	header := make([]byte, 26)
 	n, err := src.Read(header)
-	if err != nil {
-		log.Printf("[Cloudinary] Failed to read header: %v", err)
+	if err != nil || n < 26 {
 		return nil, ErrInvalidImageFile
 	}
-	if n < 26 {
-		log.Printf("[Cloudinary] Header too short: %d bytes", n)
-		return nil, ErrInvalidImageFile
-	}
-
-	log.Printf("[Cloudinary] File header bytes: %x", header[:8])
 
 	if !isValidImage(header) {
-		log.Printf("[Cloudinary] Invalid image signature")
 		return nil, ErrUnsupportedFormat
 	}
 
@@ -160,8 +148,6 @@ func (s *cloudinaryService) Upload(file *multipart.FileHeader) (*UploadResult, e
 		return nil, ErrUploadFailed
 	}
 
-	log.Printf("[Cloudinary] Upload success: public_id=%s, url=%s", result.PublicID, result.SecureURL)
-
 	return &UploadResult{
 		URL:      result.SecureURL,
 		PublicID: result.PublicID,
@@ -169,8 +155,6 @@ func (s *cloudinaryService) Upload(file *multipart.FileHeader) (*UploadResult, e
 }
 
 func (s *cloudinaryService) Delete(publicID string) error {
-	log.Printf("[Cloudinary] Deleting image: public_id=%s", publicID)
-
 	timestamp := time.Now().Unix()
 	strToSign := fmt.Sprintf("public_id=%s&timestamp=%d%s", publicID, timestamp, s.apiSecret)
 	h := sha1.Sum([]byte(strToSign))
@@ -213,8 +197,6 @@ func (s *cloudinaryService) Delete(publicID string) error {
 	if result.Result != "ok" {
 		return ErrDeleteFailed
 	}
-
-	log.Printf("[Cloudinary] Delete success: public_id=%s", publicID)
 
 	return nil
 }

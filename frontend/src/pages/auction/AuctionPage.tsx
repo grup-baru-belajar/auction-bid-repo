@@ -80,7 +80,6 @@ const AuctionPage = () => {
     }
     setFormError("");
     if (uploadedImagePublicId) {
-      console.log("[Auction] Deleting old uploaded image:", uploadedImagePublicId);
       deleteImage(uploadedImagePublicId).catch(() => {});
     }
     setImageFile(file);
@@ -156,27 +155,14 @@ const AuctionPage = () => {
     try {
       if (uploadedImageUrl) {
         imageLink = uploadedImageUrl;
-        console.log("[Auction] Using cached upload URL:", imageLink);
       } else {
-        console.log("[Auction] Uploading image...", {
-          name: imageFile.name,
-          size: imageFile.size,
-          type: imageFile.type,
-        });
         setUploading(true);
         const result = await uploadImage(imageFile);
         imageLink = result.url;
         setUploadedImageUrl(result.url);
         setUploadedImagePublicId(result.publicId);
         setUploading(false);
-        console.log("[Auction] Image uploaded:", result.url);
       }
-      console.log("[Auction] Creating auction...", {
-        auctionName: form.auctionName,
-        startingPrice: form.startingPrice,
-        endTime: form.endTime,
-        imageLink,
-      });
       await dispatch(
         createAuction({
           auctionName: form.auctionName,
@@ -186,7 +172,6 @@ const AuctionPage = () => {
           endTime: new Date(form.endTime).toISOString(),
         }),
       ).unwrap();
-      console.log("[Auction] Auction created successfully");
       setShowConfirm(false);
       resetForm();
       dispatch(
@@ -199,9 +184,7 @@ const AuctionPage = () => {
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
       const serverMsg = axiosErr?.response?.data?.message;
-      console.error("[Auction] Create failed:", serverMsg || err);
       if (uploadedImagePublicId) {
-        console.log("[Auction] Rolling back uploaded image:", uploadedImagePublicId);
         deleteImage(uploadedImagePublicId).catch(() => {});
       }
       setFormError(
@@ -340,7 +323,6 @@ const AuctionPage = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (uploadedImagePublicId) {
-                          console.log("[Auction] Deleting image on preview remove:", uploadedImagePublicId);
                           deleteImage(uploadedImagePublicId).catch(() => {});
                         }
                         setImageFile(null);
