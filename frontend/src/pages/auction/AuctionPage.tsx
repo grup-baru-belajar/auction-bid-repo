@@ -4,6 +4,7 @@ import {
   fetchAuctions,
   createAuction,
 } from "../../features/auctions/auctionsSlice";
+import { uploadImage, deleteImage } from "../../services/api/uploadApi";
 import AuctionCard from "../../components/auction/AuctionCard";
 import Pagination from "../../components/common/Pagination";
 
@@ -31,7 +32,6 @@ const AuctionPage = () => {
   const [form, setForm] = useState({
     auctionName: "",
     description: "",
-    imageLink: "",
     startingPrice: "",
     endTime: "",
   });
@@ -41,6 +41,9 @@ const AuctionPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [uploadedImagePublicId, setUploadedImagePublicId] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(
@@ -51,6 +54,12 @@ const AuctionPage = () => {
       }),
     );
   }, [currentPage, isCompletedFilter, dispatch]);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
 
   const handleFilterChange = (value: string) => {
     if (value === "all") setIsCompletedFilter(undefined);
@@ -70,10 +79,14 @@ const AuctionPage = () => {
       return;
     }
     setFormError("");
+    if (uploadedImagePublicId) {
+      console.log("[Auction] Deleting old uploaded image:", uploadedImagePublicId);
+      deleteImage(uploadedImagePublicId).catch(() => {});
+    }
     setImageFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    setImagePreview(URL.createObjectURL(file));
+    setUploadedImageUrl(null);
+    setUploadedImagePublicId(null);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -94,13 +107,15 @@ const AuctionPage = () => {
     setForm({
       auctionName: "",
       description: "",
-      imageLink: "",
       startingPrice: "",
       endTime: "",
     });
     setImageFile(null);
     setImagePreview("");
     setFormError("");
+    setUploading(false);
+    setUploadedImageUrl(null);
+    setUploadedImagePublicId(null);
   };
 
   const handleValidate = () => {
@@ -123,7 +138,7 @@ const AuctionPage = () => {
       return;
     }
 
-    if (!imageFile && !form.imageLink) {
+    if (!imageFile) {
       setFormError("Image is required");
       return;
     }
@@ -134,12 +149,34 @@ const AuctionPage = () => {
   };
 
   const handleSubmit = async () => {
+    if (!imageFile) return;
     setSubmitting(true);
-    let imageLink = form.imageLink;
-    if (imageFile) {
-      imageLink = imagePreview;
-    }
+    setFormError("");
+    let imageLink = "";
     try {
+      if (uploadedImageUrl) {
+        imageLink = uploadedImageUrl;
+        console.log("[Auction] Using cached upload URL:", imageLink);
+      } else {
+        console.log("[Auction] Uploading image...", {
+          name: imageFile.name,
+          size: imageFile.size,
+          type: imageFile.type,
+        });
+        setUploading(true);
+        const result = await uploadImage(imageFile);
+        imageLink = result.url;
+        setUploadedImageUrl(result.url);
+        setUploadedImagePublicId(result.publicId);
+        setUploading(false);
+        console.log("[Auction] Image uploaded:", result.url);
+      }
+      console.log("[Auction] Creating auction...", {
+        auctionName: form.auctionName,
+        startingPrice: form.startingPrice,
+        endTime: form.endTime,
+        imageLink,
+      });
       await dispatch(
         createAuction({
           auctionName: form.auctionName,
@@ -149,6 +186,7 @@ const AuctionPage = () => {
           endTime: new Date(form.endTime).toISOString(),
         }),
       ).unwrap();
+      console.log("[Auction] Auction created successfully");
       setShowConfirm(false);
       resetForm();
       dispatch(
@@ -161,6 +199,11 @@ const AuctionPage = () => {
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
       const serverMsg = axiosErr?.response?.data?.message;
+      console.error("[Auction] Create failed:", serverMsg || err);
+      if (uploadedImagePublicId) {
+        console.log("[Auction] Rolling back uploaded image:", uploadedImagePublicId);
+        deleteImage(uploadedImagePublicId).catch(() => {});
+      }
       setFormError(
         serverMsg || "Failed to create the auction. Please try again.",
       );
@@ -168,6 +211,7 @@ const AuctionPage = () => {
       setShowModal(true);
     } finally {
       setSubmitting(false);
+      setUploading(false);
     }
   };
 
@@ -295,8 +339,14 @@ const AuctionPage = () => {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (uploadedImagePublicId) {
+                          console.log("[Auction] Deleting image on preview remove:", uploadedImagePublicId);
+                          deleteImage(uploadedImagePublicId).catch(() => {});
+                        }
                         setImageFile(null);
                         setImagePreview("");
+                        setUploadedImageUrl(null);
+                        setUploadedImagePublicId(null);
                         if (fileInputRef.current)
                           fileInputRef.current.value = "";
                       }}
@@ -383,8 +433,10 @@ const AuctionPage = () => {
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
           onClick={() => {
-            setShowConfirm(false);
-            resetForm();
+            if (!submitting) {
+              setShowConfirm(false);
+              setShowModal(true);
+            }
           }}
         >
           <div
@@ -392,25 +444,43 @@ const AuctionPage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-bold mb-2">Create Auction</h2>
-            <p className="text-sm text-gray-600 mb-5">
-              Are you sure you want to create this auction?
-            </p>
+            {submitting ? (
+              <div className="mb-5 space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className={`w-4 h-4 border-2 rounded-full ${uploading ? "border-[#1A4B69] border-t-transparent animate-spin" : "border-green-500"}`} />
+                  <span className={uploading ? "text-[#1A4B69] font-medium" : "text-green-600"}>
+                    1. Uploading image...
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className={`w-4 h-4 border-2 rounded-full ${!uploading ? "border-[#1A4B69] border-t-transparent animate-spin" : "border-gray-300"}`} />
+                  <span className={!uploading ? "text-[#1A4B69] font-medium" : "text-gray-400"}>
+                    2. Creating auction...
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 mb-5">
+                Are you sure you want to create this auction?
+              </p>
+            )}
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => {
                   setShowConfirm(false);
                   setShowModal(true);
                 }}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                disabled={submitting}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 disabled:opacity-60"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={submitting}
+                disabled={submitting || uploading}
                 className="px-4 py-2 bg-[#1A4B69] hover:bg-[#12364c] text-white text-sm font-semibold rounded-lg disabled:opacity-60"
               >
-                {submitting ? "Creating..." : "Create"}
+                {uploading ? "Uploading..." : submitting ? "Creating..." : "Create"}
               </button>
             </div>
           </div>

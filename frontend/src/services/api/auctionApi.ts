@@ -17,7 +17,7 @@ export const auctionApi = {
   getAuctionDetail: (id: number) =>
     apiClient.get<ApiResponse<AuctionDetail>>(`/v1/auctions/${id}`),
 
-  /** POST /auctions — admin only */
+  /** POST /auctions — admin only, JSON body */
   createAuction: (data: CreateAuctionRequest) =>
     apiClient.post<ApiResponse<Auction>>("/v1/auctions", data),
 };

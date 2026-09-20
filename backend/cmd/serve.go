@@ -63,6 +63,7 @@ var serveCmd = &cobra.Command{
 
 		tokenManager := token.NewTokenManager(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
 		authService := services.NewAuthService(userRepo, tokenManager)
+		cloudinaryService := services.NewCloudinaryService(cfg.Cloudinary)
 		auctionService := services.NewAuctionService(auctionRepo)
 		auctionDetailService := services.NewAuctionDetailService(auctionDetailRepo)
 		bidService := services.NewBidService(bidRepo)
@@ -78,6 +79,7 @@ var serveCmd = &cobra.Command{
 			bidService,
 			reportingService,
 			wsHandler,
+			cloudinaryService,
 		)
 
 		if cfg.App.Env != "development" {

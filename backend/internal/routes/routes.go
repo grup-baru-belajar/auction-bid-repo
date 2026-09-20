@@ -17,6 +17,9 @@ func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *token.TokenManager,
 	api.GET("/auctions/:id", h.GetAuctionByID)
 	api.POST("/auctions", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.PostAuction)
 
+	api.POST("/upload/image", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.PostUploadImage)
+	api.DELETE("/upload/image", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.DeleteUploadImage)
+
 	api.POST("/bid", middlewares.Auth(tokenManager), h.PostBid)
 
 	api.GET("/reporting/top-auction", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetTopAuction)

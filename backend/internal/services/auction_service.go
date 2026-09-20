@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"time"
 
@@ -48,11 +49,13 @@ func (s *auctionService) CreateAuction(ctx context.Context, req models.AuctionRe
 		IsCompleted:   false,
 	}
 
+	log.Printf("[AuctionService] Creating auction in database...")
 	created, err := s.repo.Create(ctx, auction)
 	if err != nil {
 		return nil, fmt.Errorf("create auction service: %w", err)
 	}
 
+	log.Printf("[AuctionService] Auction created: id=%d", created.ID)
 	return &models.AuctionResponse{
 		ID:            created.ID,
 		AuctionName:   created.AuctionName,
