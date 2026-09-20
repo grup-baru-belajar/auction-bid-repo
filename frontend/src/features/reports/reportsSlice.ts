@@ -8,6 +8,9 @@ import type {
 } from "../../types";
 import { AxiosError } from "axios";
 
+/** No "all time" mode on the backend, so we ask for a wide window instead. */
+// const ALL_TIME_INTERVAL_DAYS = 36500;
+
 interface ReportsState {
   summary: AuctionSummary | null;
   loading: boolean;
