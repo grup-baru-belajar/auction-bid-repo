@@ -13,16 +13,20 @@ import (
 
 var ErrInvalidCredentials = errors.New("invalid username or password")
 
+type userRepository interface {
+	FindByUsername(ctx context.Context, username string) (*models.User, error)
+}
+
 type AuthService interface {
 	Login(ctx context.Context, req models.LoginRequest) (*models.LoginResponse, error)
 }
 
 type authService struct {
-	users  repository.UserRepository
+	users  userRepository
 	tokens *token.TokenManager
 }
 
-func NewAuthService(users repository.UserRepository, tokens *token.TokenManager) AuthService {
+func NewAuthService(users userRepository, tokens *token.TokenManager) AuthService {
 	return &authService{users: users, tokens: tokens}
 }
 

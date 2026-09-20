@@ -37,12 +37,17 @@ type TopBidsMessage struct {
 	TopBids      []models.TopBidResponse `json:"topBids"`
 }
 
-type Handler struct {
-	hub  *Hub
-	repo repository.AuctionDetailRepository
+type auctionDetailRepository interface {
+	FindByID(ctx context.Context, id int64) (*repository.AuctionDetail, error)
+	FindTopBids(ctx context.Context, auctionID int64, limit int) ([]repository.TopBid, error)
 }
 
-func NewHandler(hub *Hub, repo repository.AuctionDetailRepository) *Handler {
+type Handler struct {
+	hub  *Hub
+	repo auctionDetailRepository
+}
+
+func NewHandler(hub *Hub, repo auctionDetailRepository) *Handler {
 	return &Handler{hub: hub, repo: repo}
 }
 

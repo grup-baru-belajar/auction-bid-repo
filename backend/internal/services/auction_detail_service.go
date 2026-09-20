@@ -13,15 +13,20 @@ var ErrAuctionNotFound = errors.New("auction not found")
 
 const topBidsLimit = 3
 
+type auctionDetailRepository interface {
+	FindByID(ctx context.Context, id int64) (*repository.AuctionDetail, error)
+	FindTopBids(ctx context.Context, auctionID int64, limit int) ([]repository.TopBid, error)
+}
+
 type AuctionDetailService interface {
 	GetAuctionByID(ctx context.Context, id int64) (*models.AuctionDetailResponse, error)
 }
 
 type auctionDetailService struct {
-	repo repository.AuctionDetailRepository
+	repo auctionDetailRepository
 }
 
-func NewAuctionDetailService(repo repository.AuctionDetailRepository) AuctionDetailService {
+func NewAuctionDetailService(repo auctionDetailRepository) AuctionDetailService {
 	return &auctionDetailService{repo: repo}
 }
 

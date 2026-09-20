@@ -11,19 +11,16 @@ import (
 
 var ErrUserNotFound = errors.New("user not found")
 
-type UserRepository interface {
-	FindByUsername(ctx context.Context, username string) (*models.User, error)
-}
 
-type userRepository struct {
+type UserRepository struct {
 	db *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) UserRepository {
-	return &userRepository{db: db}
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db: db}
 }
 
-func (r *userRepository) FindByUsername(ctx context.Context, username string) (*models.User, error) {
+func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*models.User, error) {
 	query := `SELECT id, name, username, password, role FROM users WHERE username = $1`
 
 	var user models.User

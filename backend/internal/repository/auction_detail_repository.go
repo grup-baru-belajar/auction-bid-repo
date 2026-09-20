@@ -23,20 +23,15 @@ type TopBid struct {
 	UserName string
 }
 
-type AuctionDetailRepository interface {
-	FindByID(ctx context.Context, id int64) (*AuctionDetail, error)
-	FindTopBids(ctx context.Context, auctionID int64, limit int) ([]TopBid, error)
-}
-
-type auctionDetailRepository struct {
+type AuctionDetailRepository struct {
 	db *sql.DB
 }
 
-func NewAuctionDetailRepository(db *sql.DB) AuctionDetailRepository {
-	return &auctionDetailRepository{db: db}
+func NewAuctionDetailRepository(db *sql.DB) *AuctionDetailRepository {
+	return &AuctionDetailRepository{db: db}
 }
 
-func (r *auctionDetailRepository) FindByID(ctx context.Context, id int64) (*AuctionDetail, error) {
+func (r *AuctionDetailRepository) FindByID(ctx context.Context, id int64) (*AuctionDetail, error) {
 	query := `
 		SELECT
 			a.id, a.auction_name, a.description, a.image_link, a.bid_winner_id,
@@ -83,7 +78,7 @@ func (r *auctionDetailRepository) FindByID(ctx context.Context, id int64) (*Auct
 	return &detail, nil
 }
 
-func (r *auctionDetailRepository) FindTopBids(ctx context.Context, auctionID int64, limit int) ([]TopBid, error) {
+func (r *AuctionDetailRepository) FindTopBids(ctx context.Context, auctionID int64, limit int) ([]TopBid, error) {
 	query := `
 		SELECT b.id, b.auction_id, b.user_id, u.name, b.bid_price, b.created_at
 		FROM bids b
