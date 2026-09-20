@@ -171,7 +171,7 @@ func (h *Handler) GetAuctionSummary(c *gin.Context) {
 	})
 }
 
-func (h *Handler) GetTopBiddersByMoneySpent(c *gin.Context) {
+func (h *Handler) GetTopBidders(c *gin.Context) {
 	limit := c.Query("limit")
 	if limit == "" {
 		limit = "5"
@@ -185,12 +185,17 @@ func (h *Handler) GetTopBiddersByMoneySpent(c *gin.Context) {
 		return
 	}
 
-	topBidders, err := h.reportingService.GetTopBiddersByMoneySpent(c.Request.Context(), limitInt)
+	sortBy := c.Query("sort_by")
+	if sortBy == "" {
+		sortBy = "amount"
+	}
+
+	topBidders, err := h.reportingService.GetTopBidders(c.Request.Context(), limitInt, sortBy)
 	if err != nil {
-		log.Printf("GetTopBiddersByMoneySpent error: %v", err)
+		log.Printf("GetTopBidders error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": "Failed to get top bidders by money spent",
+			"message": "Failed to get top bidders data",
 		})
 		return
 	}

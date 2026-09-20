@@ -29,7 +29,8 @@ func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *token.TokenManager,
 	api.GET("/reporting/total-transaction", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetTotalTransaction)
 	api.GET("/reporting/auction-summary", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetAuctionSummary)
 	api.GET("/reporting/transaction-overview", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetTransactionOverview)
-	api.GET("/reporting/top-bidders/top-spenders", h.GetTopBiddersByMoneySpent)
+	// can have sorting based on amount or transaction_count, default is amount
+	api.GET("/reporting/top-bidders", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetTopBidders)
 
 	r.GET("/ws/auctions/:id/top-bids", wsHandler.ServeHTTP)
 }
