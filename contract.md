@@ -428,13 +428,16 @@ Authorization: Bearer <token>
 
 ### GET /reporting/auction-activity
 
-Mengambil jumlah bid per hari untuk 7 hari terakhir.
+Mengambil jumlah auction yang dibuat **dan** jumlah bid yang masuk, per hari.
 
 ### Authorization
 
+ADMIN only.
+
+### Request
 
 ```http
-GET /reporting/auction-activity
+GET /reporting/auction-activity?interval=30
 Authorization: Bearer <token>
 ```
 
@@ -447,10 +450,12 @@ Authorization: Bearer <token>
   "data": [
     {
       "date": "2026-09-14",
+      "totalAuctions": 1,
       "totalBids": 8
     },
     {
       "date": "2026-09-15",
+      "totalAuctions": 0,
       "totalBids": 3
     }
   ]
@@ -459,12 +464,54 @@ Authorization: Bearer <token>
 
 ### Notes
 
-- Hanya mengembalikan tanggal yang memiliki bid (tidak mengisi tanggal kosong dengan 0).
+- **Breaking change:** endpoint ini sebelumnya bernama "auction activity" tapi bug-nya menghitung bid, bukan auction (field `totalBids` saja, tanpa `totalAuctions`). Sekarang mengembalikan kedua metrik sekaligus dalam satu response.
+- Hanya mengembalikan tanggal yang memiliki auction **atau** bid (tidak mengisi tanggal kosong dengan 0 row — tapi jika salah satu metrik ada datanya di tanggal tsb, metrik yang lain diisi `0`).
 - Diurutkan `date ASC`.
 
 ---
 
-## 6.3 Get Auction Status
+## 6.3 Get Total Bidders
+
+### GET /reporting/total-bidders
+
+Mengambil jumlah bidder unik (distinct `user_id` dari tabel `bids`).
+
+### Authorization
+
+ADMIN only.
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|------------|------------|------------|------------|
+| interval | string | No | Jumlah hari ke belakang (mis. `"7"`, `"30"`), atau `"all"` untuk seluruh waktu (tanpa filter tanggal). Default `"7"`. |
+| auctionId | string | No | Filter ke satu auction tertentu. |
+
+### Request
+
+```http
+GET /reporting/total-bidders?interval=all
+Authorization: Bearer <token>
+```
+
+### Response 200
+
+```json
+{
+  "success": true,
+  "message": "Total bidders retrieved successfully",
+  "data": 4
+}
+```
+
+### Notes
+
+- `data` adalah angka (integer), bukan object/array.
+- `interval=all` benar-benar tidak memfilter tanggal (query tanpa `WHERE created_at ...`) — bukan sekadar rentang hari yang sangat besar.
+
+---
+
+## 6.4 Get Auction Status
 
 ### GET /reporting/auction-status
 
@@ -499,7 +546,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 6.4 Get Auction Summary
+## 6.5 Get Auction Summary
 
 ### GET /reporting/auction-summary
 
@@ -531,6 +578,52 @@ Authorization: Bearer <token>
   }
 }
 ```
+
+---
+
+## 6.6 Get Transaction Overview
+
+### GET /reporting/transaction-overview
+
+Mengambil total nilai transaksi per minggu. "Transaksi" = auction yang sudah selesai (`is_completed = true` atau `end_time` sudah lewat); nilainya diambil dari `last_price` auction tsb.
+
+### Authorization
+
+ADMIN only.
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|------------|------------|------------|------------|
+| weeks | integer | No | Jumlah minggu ke belakang dari hari ini. Default `4`. Nilai ≤ 0 atau tidak valid akan jatuh ke default. |
+
+### Request
+
+```http
+GET /reporting/transaction-overview?weeks=4
+Authorization: Bearer <token>
+```
+
+### Response 200
+
+```json
+{
+  "success": true,
+  "message": "Transaction overview retrieved successfully",
+  "data": [
+    {
+      "weekStart": "2026-09-14",
+      "total": 31000000
+    }
+  ]
+}
+```
+
+### Notes
+
+- Minggu dikelompokkan mulai hari Senin (`DATE_TRUNC('week', end_time)`), berdasarkan `end_time` auction — bukan `created_at`.
+- Hanya mengembalikan minggu yang punya minimal satu auction selesai (tidak di-zero-fill).
+- Diurutkan `weekStart ASC`.
 
 ---
 
