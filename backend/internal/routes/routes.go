@@ -25,6 +25,8 @@ func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *token.TokenManager,
 	api.GET("/reporting/top-auction", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetTopAuction)
 	api.GET("/reporting/auction-activity", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetAuctionActivity)
 	api.GET("/reporting/auction-status", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetAuctionStatus)
+	api.GET("/reporting/total-bidders", middlewares.Auth(tokenManager), middlewares.RequireAdmin(), h.GetTotalBidders)
+	
 
 	r.GET("/ws/auctions/:id/top-bids", wsHandler.ServeHTTP)
 }

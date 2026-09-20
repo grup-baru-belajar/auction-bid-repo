@@ -11,6 +11,7 @@ type ReportingService interface {
 	GetTopAuction(ctx context.Context, limit int) ([]models.TopAuction, error)
 	GetAuctionActivity(ctx context.Context) ([]models.AuctionActivity, error)
 	GetAuctionStatus(ctx context.Context) ([]models.AuctionStatus, error)
+	GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error)
 }
 
 type reportingService struct {
@@ -31,4 +32,8 @@ func (s *reportingService) GetAuctionActivity(ctx context.Context) ([]models.Auc
 
 func (s *reportingService) GetAuctionStatus(ctx context.Context) ([]models.AuctionStatus, error) {
 	return s.repo.GetAuctionStatus(ctx)
+}
+
+func (s *reportingService) GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error) {
+	return s.repo.GetTotalBidders(ctx, interval, auctionId)
 }

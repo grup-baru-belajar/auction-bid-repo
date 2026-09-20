@@ -11,6 +11,7 @@ type ReportingRepository interface {
 	GetTopAuction(ctx context.Context, limit int) ([]models.TopAuction, error)
 	GetAuctionActivity(ctx context.Context) ([]models.AuctionActivity, error)
 	GetAuctionStatus(ctx context.Context) ([]models.AuctionStatus, error)
+	GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error)
 }
 
 type reportingRepository struct {
@@ -167,4 +168,46 @@ func (r *reportingRepository) GetAuctionStatus(ctx context.Context) ([]models.Au
 	}
 
 	return statuses, nil
+}
+
+
+
+/*
+1. get total bidders from every aution and 1 auction in the last x date
+*/
+func (r *reportingRepository) GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error) {
+	query := `
+		SELECT COUNT(DISTINCT user_id) AS total_bidders
+		FROM bids
+		WHERE created_at::DATE >= CURRENT_DATE - $1::INTERVAL
+	`
+	if auctionId != "" {
+		query += ` AND auction_id = $2`
+	}
+	query += ";"
+	var rows *sql.Rows
+	var err error
+	if auctionId != "" {
+		rows, err = r.db.QueryContext(ctx, query, interval, auctionId)
+	} else {
+		rows, err = r.db.QueryContext(ctx, query, interval)
+	}
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	var totalBidders int
+	if rows.Next() {
+		err := rows.Scan(&totalBidders)
+		if err != nil {
+			return 0, err
+		}
+	}
+	
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+
+	return totalBidders, nil
 }
