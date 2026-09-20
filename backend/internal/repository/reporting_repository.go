@@ -15,6 +15,7 @@ type ReportingRepository interface {
 	GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error)
 	GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error)
 	GetTransactionOverview(ctx context.Context, weeks int) ([]models.TransactionWeek, error)
+	GetTopBiddersByMoneySpent(ctx context.Context, limit int) ([]models.TopSpenderBidder, error)
 }
 
 type reportingRepository struct {
@@ -333,4 +334,48 @@ func (r *reportingRepository) GetTransactionOverview(ctx context.Context, weeks 
 	}
 
 	return result, nil
+}
+
+func (r *reportingRepository) GetTopBiddersByMoneySpent(ctx context.Context, limit int,) ([]models.TopSpenderBidder, error) {
+	query := `
+		SELECT 
+		u.id, 
+		u.username, 
+		u.name, 
+		COALESCE(SUM(a.last_price), 0) AS total_money_spent, 
+		(CURRENT_DATE - 
+			(
+				SELECT MAX(b.created_at)::DATE 
+				FROM bids b 
+				WHERE b.user_id = u.id
+			)
+		) || ' days ago' AS last_bid_ago
+		FROM users u 
+		INNER JOIN auctions a ON u.id = a.bid_winner_id
+		WHERE a.is_completed = TRUE AND a.end_time <= CURRENT_TIMESTAMP
+		GROUP BY u.id, u.username, u.name
+		ORDER BY total_money_spent DESC
+		LIMIT $1;
+	`
+	rows, err := r.db.QueryContext(ctx, query, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var topBidders []models.TopSpenderBidder
+
+	for rows.Next() {
+		var bidder models.TopSpenderBidder
+		if err := rows.Scan(&bidder.UserID, &bidder.Username, &bidder.Name, &bidder.TotalMoneySpent, &bidder.LastBidAgo); err != nil {
+			return nil, err
+		}
+		topBidders = append(topBidders, bidder)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return topBidders, nil
 }

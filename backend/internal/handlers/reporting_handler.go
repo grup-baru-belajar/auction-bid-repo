@@ -170,3 +170,34 @@ func (h *Handler) GetAuctionSummary(c *gin.Context) {
 		"data":    summary,
 	})
 }
+
+func (h *Handler) GetTopBiddersByMoneySpent(c *gin.Context) {
+	limit := c.Query("limit")
+	if limit == "" {
+		limit = "5"
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid limit parameter",
+		})
+		return
+	}
+
+	topBidders, err := h.reportingService.GetTopBiddersByMoneySpent(c.Request.Context(), limitInt)
+	if err != nil {
+		log.Printf("GetTopBiddersByMoneySpent error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get top bidders by money spent",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Top bidders by money spent retrieved successfully",
+		"data":    topBidders,
+	})
+}
