@@ -58,7 +58,8 @@ func (r *auctionRepository) FindAll(ctx context.Context, limit, offset int, isCo
 	selectQuery := `
 		SELECT 
 			a.id, a.auction_name, a.description, a.image_link, a.bid_winner_id,
-			a.starting_price, a.last_price, a.created_at, a.end_time, a.is_completed,
+			a.starting_price, a.last_price, a.created_at, a.end_time,
+			(a.is_completed OR a.end_time <= NOW()) AS is_completed,
 			u.name AS bid_winner_name
 		FROM auctions a
 		LEFT JOIN users u ON a.bid_winner_id = u.id
@@ -69,7 +70,7 @@ func (r *auctionRepository) FindAll(ctx context.Context, limit, offset int, isCo
 	argIndex := 1
 
 	if isCompleted != nil {
-		conditions = append(conditions, fmt.Sprintf("a.is_completed = $%d", argIndex))
+		conditions = append(conditions, fmt.Sprintf("(a.is_completed OR a.end_time <= NOW()) = $%d", argIndex))
 		args = append(args, *isCompleted)
 		argIndex++
 	}

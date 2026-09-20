@@ -63,3 +63,55 @@ func (h *Handler) GetAuctionStatus(c *gin.Context) {
 		"data":    statuses,
 	})
 }
+
+func (h *Handler) GetTotalBidders(c *gin.Context) {
+	interval := c.Query("interval")
+	if interval == "" {
+		interval = "7"
+	}
+	interval = interval + " days"
+	auctionId := c.Query("auctionId")
+
+	totalBidders, err := h.reportingService.GetTotalBidders(c.Request.Context(), interval, auctionId)
+
+	if err != nil {
+		log.Printf("GetTotalBidders error: %v", err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get total bidders",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Total bidders retrieved successfully",
+		"data":    totalBidders,
+	})
+}
+
+func (h *Handler) GetTotalTransaction(c *gin.Context) {
+	interval := c.Query("interval")
+	if interval == "" {
+		interval = "7"
+	}
+	interval = interval + " days"
+	totalTransactions, err := h.reportingService.GetTotalTransaction(c.Request.Context(), interval)
+
+	if err != nil {
+		log.Printf("GetTotalTransaction error: %v", err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get total transactions",
+		})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Total transactions retrieved successfully",
+		"data":    totalTransactions,
+	})
+}

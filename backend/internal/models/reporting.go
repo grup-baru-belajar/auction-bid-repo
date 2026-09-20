@@ -1,5 +1,7 @@
 package models
 
+import "github.com/shopspring/decimal"
+
 type TopAuction struct {
 	ID            int64   `json:"id"`
 	AuctionName   string  `json:"auctionName"`
@@ -18,4 +20,9 @@ type AuctionActivity struct {
 type AuctionStatus struct {
 	Status string `json:"status"`
 	Total  int64  `json:"total"`
+}
+
+type TotalTransaction struct {
+	TransactionCount string `json:"transactionCount"`
+	TotalGrossSales decimal.Decimal  `json:"totalGrossSales"`
 }

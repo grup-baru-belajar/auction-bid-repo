@@ -5,6 +5,7 @@ import AuctionPage from "./pages/auction/AuctionPage";
 import AuctionDetailPage from "./pages/detail-auction/AuctionDetailPage";
 import ReportPage from "./pages/report/ReportPage";
 import Layout from "./components/layout/Layout";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
         element: <ReportPage />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
 
