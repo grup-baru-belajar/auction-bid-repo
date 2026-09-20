@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/models"
 )
@@ -15,7 +16,7 @@ type AuctionWithWinner struct {
 
 type AuctionRepository interface {
 	Create(ctx context.Context, auction *models.Auction) (*models.Auction, error)
-	FindAll(ctx context.Context, limit, offset int, isCompleted *bool) ([]AuctionWithWinner, int64, error)
+	FindAll(ctx context.Context, limit, offset int, isCompleted *bool, search string) ([]AuctionWithWinner, int64, error)
 }
 
 type auctionRepository struct {
@@ -52,10 +53,8 @@ func (r *auctionRepository) Create(ctx context.Context, auction *models.Auction)
 	return auction, nil
 }
 
-func (r *auctionRepository) FindAll(ctx context.Context, limit, offset int, isCompleted *bool) ([]AuctionWithWinner, int64, error) {
-	countQuery := `SELECT COUNT(*) FROM auctions`
-	var countArgs []any
-
+func (r *auctionRepository) FindAll(ctx context.Context, limit, offset int, isCompleted *bool, search string) ([]AuctionWithWinner, int64, error) {
+	countQuery := `SELECT COUNT(*) FROM auctions a`
 	selectQuery := `
 		SELECT 
 			a.id, a.auction_name, a.description, a.image_link, a.bid_winner_id,
@@ -64,24 +63,37 @@ func (r *auctionRepository) FindAll(ctx context.Context, limit, offset int, isCo
 		FROM auctions a
 		LEFT JOIN users u ON a.bid_winner_id = u.id
 	`
-	var selectArgs []any
+
+	var conditions []string
+	var args []any
+	argIndex := 1
 
 	if isCompleted != nil {
-		countQuery += ` WHERE is_completed = $1`
-		countArgs = append(countArgs, *isCompleted)
+		conditions = append(conditions, fmt.Sprintf("a.is_completed = $%d", argIndex))
+		args = append(args, *isCompleted)
+		argIndex++
+	}
 
-		selectQuery += ` WHERE a.is_completed = $1 ORDER BY a.created_at DESC LIMIT $2 OFFSET $3`
-		selectArgs = append(selectArgs, *isCompleted, limit, offset)
-	} else {
-		selectQuery += ` ORDER BY a.created_at DESC LIMIT $1 OFFSET $2`
-		selectArgs = append(selectArgs, limit, offset)
+	if search != "" {
+		conditions = append(conditions, fmt.Sprintf("a.auction_name ILIKE $%d", argIndex))
+		args = append(args, "%"+search+"%")
+		argIndex++
+	}
+
+	if len(conditions) > 0 {
+		whereClause := " WHERE " + strings.Join(conditions, " AND ")
+		countQuery += whereClause
+		selectQuery += whereClause
 	}
 
 	var total int64
-	err := r.db.QueryRowContext(ctx, countQuery, countArgs...).Scan(&total)
+	err := r.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
 		return nil, 0, fmt.Errorf("count auctions: %w", err)
 	}
+
+	selectQuery += fmt.Sprintf(" ORDER BY a.created_at DESC LIMIT $%d OFFSET $%d", argIndex, argIndex+1)
+	selectArgs := append(args, limit, offset)
 
 	rows, err := r.db.QueryContext(ctx, selectQuery, selectArgs...)
 	if err != nil {

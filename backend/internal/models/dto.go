@@ -61,9 +61,10 @@ type AuctionResponse struct {
 }
 
 type GetAuctionsQuery struct {
-	Page        int   `form:"page"`
-	Limit       int   `form:"limit"`
-	IsCompleted *bool `form:"isCompleted"`
+	Page        int    `form:"page"`
+	Limit       int    `form:"limit"`
+	IsCompleted *bool  `form:"isCompleted"`
+	Search      string `form:"search"`
 }
 
 type BidRequest struct {

@@ -80,7 +80,7 @@ func (s *auctionService) GetAuctions(ctx context.Context, query models.GetAuctio
 
 	offset := (page - 1) * limit
 
-	items, total, err := s.repo.FindAll(ctx, limit, offset, query.IsCompleted)
+	items, total, err := s.repo.FindAll(ctx, limit, offset, query.IsCompleted, query.Search)
 	if err != nil {
 		return nil, models.PaginationResponse{}, fmt.Errorf("get auctions service: %w", err)
 	}
