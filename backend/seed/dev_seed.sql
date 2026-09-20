@@ -41,7 +41,172 @@ INSERT INTO auctions (auction_name, description, image_link, starting_price, las
      'PS5 Slim Digital Edition, segel belum dibuka',
      'https://cdn.example.com/images/ps5-slim.jpg',
      7500000, 7500000,
-     NOW() - INTERVAL '3 hours', NOW() + INTERVAL '5 days', FALSE);
+     NOW() - INTERVAL '3 hours', NOW() + INTERVAL '5 days', FALSE),
+     (
+        'Apple Watch Series 8 45mm GPS', 
+        'Midnight Aluminum Case, battery health 92%, mulus no dent', 
+        'https://cdn.example.com/images/apple-watch-s8.jpg', 
+        1, 
+        4000000.00, 
+        5100000.00, 
+        NOW() - INTERVAL '14 days', 
+        NOW() - INTERVAL '4 days', 
+        TRUE
+    ),
+    (
+        'Fujifilm X-T30 II Body Only', 
+        'Warna Silver, SC rendah 3 ribuan, kelengkapan box fullset', 
+        'https://cdn.example.com/images/fujifilm-xt30.jpg', 
+        2, 
+        10000000.00, 
+        12300000.00, 
+        NOW() - INTERVAL '20 days', 
+        NOW() - INTERVAL '10 days', 
+        TRUE
+    ),
+    (
+        'iPad Air 5 M1 64GB Wi-Fi Space Gray', 
+        'Layar bening terpasang paperlike screen protector, garansi aktif', 
+        'https://cdn.example.com/images/ipad-air-5.jpg', 
+        3, 
+        7500000.00, 
+        8900000.00, 
+        NOW() - INTERVAL '10 days', 
+        NOW() - INTERVAL '2 days', 
+        TRUE
+    ),
+    (
+        'LG DualUp Monitor 28SD750 16:18 Ergo Stand', 
+        'Layar unik SDQHD IPS, kondisi normal no dead pixel, lengkap box', 
+        'https://cdn.example.com/images/lg-dualup.jpg', 
+        1, 
+        6500000.00, 
+        7600000.00, 
+        NOW() - INTERVAL '18 days', 
+        NOW() - INTERVAL '7 days', 
+        TRUE
+    ),
+    (
+        'Samsung Galaxy S23 Ultra 12/256GB', 
+        'Warna Phantom Black, garansi Sein resmi, pemakaian terawat', 
+        'https://cdn.example.com/images/s23-ultra.jpg', 
+        2, 
+        11000000.00, 
+        13200000.00, 
+        NOW() - INTERVAL '9 days', 
+        NOW() - INTERVAL '1 day', 
+        TRUE
+    ),
+    (
+        'Nintendo Switch OLED Zelda Tears of the Kingdom Edition', 
+        'Fullset mulus, terpasang tempered glass, joycon no drift', 
+        'https://cdn.example.com/images/switch-oled-totk.jpg', 
+        3, 
+        4200000.00, 
+        5000000.00, 
+        NOW() - INTERVAL '25 days', 
+        NOW() - INTERVAL '15 days', 
+        TRUE
+    ),
+    (
+        'Bose QuietComfort 45 Headphone', 
+        'Warna Smoke White, earpad masih empuk, fungsi normal 100%', 
+        'https://cdn.example.com/images/bose-qc45.jpg', 
+        1, 
+        2800000.00, 
+        3400000.00, 
+        NOW() - INTERVAL '16 days', 
+        NOW() - INTERVAL '6 days', 
+        TRUE
+    ),
+    (
+        'DJI Mini 3 Pro Fly More Combo', 
+        'Drone mulus no crash, sensor lancar, dapat 3 baterai', 
+        'https://cdn.example.com/images/dji-mini-3.jpg', 
+        2, 
+        9500000.00, 
+        11800000.00, 
+        NOW() - INTERVAL '30 days', 
+        NOW() - INTERVAL '18 days', 
+        TRUE
+    ),
+    (
+        'Dyson V12 Detect Slim Vacuum', 
+        'Kondisi fisik 90%, hisapan kuat, aksesoris lengkap', 
+        'https://cdn.example.com/images/dyson-v12.jpg', 
+        3, 
+        6000000.00, 
+        7200000.00, 
+        NOW() - INTERVAL '11 days', 
+        NOW() - INTERVAL '3 days', 
+        TRUE
+    ),
+    (
+        'ASUS ROG Ally Z1 Extreme 512GB', 
+        'Handheld gaming PC, terpasang SSD 1TB upgrade, garansi resmi', 
+        'https://cdn.example.com/images/rog-ally.jpg', 
+        1, 
+        7000000.00, 
+        8500000.00, 
+        NOW() - INTERVAL '7 days', 
+        NOW() - INTERVAL '1 day', 
+        TRUE
+    )
+    (
+        'iPhone 15 Pro Max 256GB Natural Titanium', 
+        'Garansi resmi iBox aktif, kondisi 99% mulus like new, battery health 100%', 
+        'https://cdn.example.com/images/iphone-15-promax.jpg', 
+        NULL, 
+        16000000.00, 
+        17500000.00, 
+        NOW() - INTERVAL '2 days', 
+        NOW() + INTERVAL '3 days', 
+        FALSE
+    ),
+    (
+        'Sony PlayStation Portal Remote Player', 
+        'Kondisi gress pemakaian seminggu, terpasang tempered glass, lengkap box', 
+        'https://cdn.example.com/images/ps-portal.jpg', 
+        NULL, 
+        3200000.00, 
+        3600000.00, 
+        NOW() - INTERVAL '1 day', 
+        NOW() + INTERVAL '5 days', 
+        FALSE
+    ),
+    (
+        'MacMini M2 Pro 16/512GB', 
+        'Pembelian 2024, performa mantap untuk video editing 4K, fullset original', 
+        'https://cdn.example.com/images/macmini-m2.jpg', 
+        NULL, 
+        15000000.00, 
+        15800000.00, 
+        NOW() - INTERVAL '3 days', 
+        NOW() + INTERVAL '1 day', 
+        FALSE
+    ),
+    (
+        'Garmin Forerunner 965 Black', 
+        'Smartwatch lari AMOLED, bezel titanium, battery awet 10 hari, sensor akurat', 
+        'https://cdn.example.com/images/garmin-fr965.jpg', 
+        NULL, 
+        7500000.00, 
+        8200000.00, 
+        NOW() - INTERVAL '12 hours', 
+        NOW() + INTERVAL '2 days', 
+        FALSE
+    ),
+    (
+        'Logitech MX Master 3S Wireless Mouse', 
+        'Warna Pale Gray, silent click, kondisi mulus no minus, garansi distributor', 
+        'https://cdn.example.com/images/mx-master-3s.jpg', 
+        NULL, 
+        1100000.00, 
+        1350000.00, 
+        NOW() - INTERVAL '6 hours', 
+        NOW() + INTERVAL '4 days', 
+        FALSE
+    );
 
 INSERT INTO bids (auction_id, user_id, bid_price, created_at)
 SELECT a.id, u.id, v.bid_price, NOW() - v.age
