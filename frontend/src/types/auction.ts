@@ -47,4 +47,5 @@ export interface GetAuctionsParams {
   page?: number;
   limit?: number;
   isCompleted?: boolean;
+  search?: string;
 }
