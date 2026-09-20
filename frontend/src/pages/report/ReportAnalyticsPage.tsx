@@ -1,13 +1,21 @@
 import { useEffect } from "react";
+import { Gavel, TrendingUp, Users, Wallet } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { fetchAuctionSummary } from "../../features/reports/reportsSlice";
+import {
+  fetchAuctionSummary,
+  fetchTotalBidders,
+} from "../../features/reports/reportsSlice";
+import StatCard from "../../components/report/StatCard";
 
 const ReportAnalyticsPage = () => {
   const dispatch = useAppDispatch();
-  const { summary, loading, error } = useAppSelector((state) => state.reports);
+  const { summary, loading, error, totalBidders } = useAppSelector(
+    (state) => state.reports,
+  );
 
   useEffect(() => {
     dispatch(fetchAuctionSummary());
+    dispatch(fetchTotalBidders());
   }, [dispatch]);
 
   return (
@@ -20,43 +28,31 @@ const ReportAnalyticsPage = () => {
       {error && <p className="text-center text-red-500 py-10">{error}</p>}
 
       {!loading && !error && summary && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-sm text-gray-500">Total Auctions</p>
-            <p className="text-2xl font-bold text-[#1A4B69]">
-              {summary.totalAuctions}
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-sm text-gray-500">Ongoing Auctions</p>
-            <p className="text-2xl font-bold text-[#1A4B69]">
-              {summary.ongoingAuctions}
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-sm text-gray-500">Completed Auctions</p>
-            <p className="text-2xl font-bold text-[#1A4B69]">
-              {summary.completedAuctions}
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-sm text-gray-500">Bids (Ongoing)</p>
-            <p className="text-2xl font-bold text-[#1A4B69]">
-              {summary.totalBidsOngoing}
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-sm text-gray-500">Bids (Completed)</p>
-            <p className="text-2xl font-bold text-[#1A4B69]">
-              {summary.totalBidsCompleted}
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-sm text-gray-500">Bids (All)</p>
-            <p className="text-2xl font-bold text-[#1A4B69]">
-              {summary.totalBidsAll}
-            </p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="Total Auctions"
+            value={summary.totalAuctions}
+            unit="Auctions"
+            icon={<Gavel size={18} />}
+          />
+          <StatCard
+            title="Total Bids"
+            value={summary.totalBidsAll}
+            unit="Bids"
+            icon={<TrendingUp size={18} />}
+          />
+          <StatCard
+            title="Total Transactions"
+            value={summary.completedAuctions}
+            unit="Transactions"
+            icon={<Wallet size={18} />}
+          />
+          <StatCard
+            title="Total Bidders"
+            value={totalBidders ?? "..."}
+            unit="Bidders"
+            icon={<Users size={18} />}
+          />
         </div>
       )}
     </div>
