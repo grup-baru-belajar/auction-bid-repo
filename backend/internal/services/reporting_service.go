@@ -9,11 +9,12 @@ import (
 
 type ReportingService interface {
 	GetTopAuction(ctx context.Context, limit int) ([]models.TopAuction, error)
-	GetAuctionActivity(ctx context.Context) ([]models.AuctionActivity, error)
+	GetAuctionActivity(ctx context.Context, intervalDays int) ([]models.AuctionActivity, error)
 	GetAuctionStatus(ctx context.Context) ([]models.AuctionStatus, error)
 	GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error)
 	GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error)
 	GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error)
+	GetTransactionOverview(ctx context.Context, weeks int) ([]models.TransactionWeek, error)
 }
 
 type reportingService struct {
@@ -28,8 +29,12 @@ func (s *reportingService) GetTopAuction(ctx context.Context, limit int) ([]mode
 	return s.repo.GetTopAuction(ctx, limit)
 }
 
-func (s *reportingService) GetAuctionActivity(ctx context.Context) ([]models.AuctionActivity, error) {
-	return s.repo.GetAuctionActivity(ctx)
+func (s *reportingService) GetAuctionActivity(ctx context.Context, intervalDays int) ([]models.AuctionActivity, error) {
+	return s.repo.GetAuctionActivity(ctx, intervalDays)
+}
+
+func (s *reportingService) GetTransactionOverview(ctx context.Context, weeks int) ([]models.TransactionWeek, error) {
+	return s.repo.GetTransactionOverview(ctx, weeks)
 }
 
 func (s *reportingService) GetAuctionStatus(ctx context.Context) ([]models.AuctionStatus, error) {

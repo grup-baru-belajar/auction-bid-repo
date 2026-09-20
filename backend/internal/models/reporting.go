@@ -12,9 +12,17 @@ type TopAuction struct {
 	Status        string  `json:"status"`
 }
 
+// AuctionActivity is auctions created and bids placed, per day.
 type AuctionActivity struct {
-	Date      string `json:"date"`
-	TotalBids int64  `json:"totalBids"`
+	Date          string `json:"date"`
+	TotalAuctions int64  `json:"totalAuctions"`
+	TotalBids     int64  `json:"totalBids"`
+}
+
+// TransactionWeek is the sum of completed auctions' lastPrice for one week.
+type TransactionWeek struct {
+	WeekStart string  `json:"weekStart"`
+	Total     float64 `json:"total"`
 }
 
 type AuctionStatus struct {
