@@ -8,6 +8,10 @@ import {
 import { uploadImage, deleteImage } from "../../services/api/uploadApi";
 import AuctionCard from "../../components/auction/AuctionCard";
 import Pagination from "../../components/common/Pagination";
+import {
+  IMAGE_BLOCKED_BY_NETWORK,
+  isNetworkOnlyError,
+} from "../../utils/image";
 
 const LIMIT = 10;
 
@@ -51,6 +55,7 @@ const AuctionPage = () => {
     string | null
   >(null);
   const [createSuccess, setCreateSuccess] = useState(false);
+  const [imageNetworkError, setImageNetworkError] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -73,6 +78,17 @@ const AuctionPage = () => {
       if (imagePreview) URL.revokeObjectURL(imagePreview);
     };
   }, [imagePreview]);
+
+  useEffect(() => {
+    if (showModal || showConfirm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showModal, showConfirm]);
 
   const handleFilterChange = (value: string) => {
     if (value === "all") setIsCompletedFilter(undefined);
@@ -128,6 +144,7 @@ const AuctionPage = () => {
     setUploading(false);
     setUploadedImageUrl(null);
     setUploadedImagePublicId(null);
+    setImageNetworkError(false);
   };
 
   const handleValidate = () => {
@@ -164,18 +181,34 @@ const AuctionPage = () => {
     if (!imageFile) return;
     setSubmitting(true);
     setFormError("");
+    setImageNetworkError(false);
+
     let imageLink = "";
+    let newPublicId: string | null = null;
+
     try {
       if (uploadedImageUrl) {
         imageLink = uploadedImageUrl;
       } else {
         setUploading(true);
-        const result = await uploadImage(imageFile);
-        imageLink = result.url;
-        setUploadedImageUrl(result.url);
-        setUploadedImagePublicId(result.publicId);
-        setUploading(false);
+        try {
+          const result = await uploadImage(imageFile);
+          imageLink = result.url;
+          newPublicId = result.publicId;
+          setUploadedImageUrl(result.url);
+          setUploadedImagePublicId(result.publicId);
+        } catch (uploadErr: unknown) {
+          if (isNetworkOnlyError(uploadErr)) {
+            imageLink = IMAGE_BLOCKED_BY_NETWORK;
+            setImageNetworkError(true);
+          } else {
+            throw uploadErr;
+          }
+        } finally {
+          setUploading(false);
+        }
       }
+
       await dispatch(
         createAuction({
           auctionName: form.auctionName,
@@ -185,6 +218,7 @@ const AuctionPage = () => {
           endTime: new Date(form.endTime).toISOString(),
         }),
       ).unwrap();
+
       setCreateSuccess(true);
       dispatch(
         fetchAuctions({
@@ -194,13 +228,18 @@ const AuctionPage = () => {
         }),
       );
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      const serverMsg = axiosErr?.response?.data?.message;
-      if (uploadedImagePublicId) {
-        deleteImage(uploadedImagePublicId).catch(() => {});
+      const publicIdToDelete = newPublicId ?? uploadedImagePublicId;
+      if (publicIdToDelete) {
+        deleteImage(publicIdToDelete).catch(() => {});
+        setUploadedImageUrl(null);
+        setUploadedImagePublicId(null);
       }
+
+      setImageNetworkError(false);
+      const axiosErr = err as { response?: { data?: { message?: string } } };
       setFormError(
-        serverMsg || "Failed to create the auction. Please try again.",
+        axiosErr?.response?.data?.message ||
+          "Failed to create the auction. Please try again.",
       );
       setShowConfirm(false);
       setShowModal(true);
@@ -508,6 +547,14 @@ const AuctionPage = () => {
                     <p className="text-xs text-gray-500">
                       Your auction is now live and visible to bidders.
                     </p>
+                    {imageNetworkError && (
+                      <p className="text-xs text-amber-600 mt-2">
+                        The image could not be uploaded because the network
+                        blocked the upload (image_network_error). The auction
+                        was created with a placeholder image. Please try
+                        uploading the image again later.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

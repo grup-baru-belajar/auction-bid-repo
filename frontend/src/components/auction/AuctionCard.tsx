@@ -1,6 +1,6 @@
-// src/components/auction/AuctionCard.tsx
 import { Link } from "react-router-dom";
 import type { Auction } from "../../types";
+import { resolveImageUrl } from "../../utils/image";
 
 interface AuctionCardProps {
   auction: Auction;
@@ -34,7 +34,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
         {/* Gambar + status dot */}
         <div className="relative px-6 pt-6">
           <img
-            src={auction.imageLink}
+            src={resolveImageUrl(auction.imageLink)}
             alt={auction.auctionName}
             className="w-full h-56 object-cover rounded-lg"
           />
