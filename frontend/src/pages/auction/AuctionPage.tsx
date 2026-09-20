@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   fetchAuctions,
@@ -22,6 +23,9 @@ const AuctionPage = () => {
   const { user } = useAppSelector((state) => state.auth);
   const isAdmin = user?.role === "ADMIN";
 
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get("search") ?? "";
+
   const [currentPage, setCurrentPage] = useState(1);
   const [isCompletedFilter, setIsCompletedFilter] = useState<
     boolean | undefined
@@ -43,7 +47,9 @@ const AuctionPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [uploadedImagePublicId, setUploadedImagePublicId] = useState<string | null>(null);
+  const [uploadedImagePublicId, setUploadedImagePublicId] = useState<
+    string | null
+  >(null);
   const [createSuccess, setCreateSuccess] = useState(false);
 
   useEffect(() => {
@@ -52,9 +58,15 @@ const AuctionPage = () => {
         page: currentPage,
         limit: LIMIT,
         isCompleted: isCompletedFilter,
+        search: search || undefined,
       }),
     );
-  }, [currentPage, isCompletedFilter, dispatch]);
+  }, [currentPage, isCompletedFilter, search, dispatch]);
+
+  // error
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   useEffect(() => {
     return () => {
@@ -436,32 +448,62 @@ const AuctionPage = () => {
               <div className="mb-5 space-y-2">
                 <div className="flex items-center gap-2 text-sm">
                   {createSuccess || !uploading ? (
-                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4 text-green-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   ) : (
                     <div className="w-4 h-4 border-2 border-[#1A4B69] border-t-transparent rounded-full animate-spin" />
                   )}
-                  <span className={createSuccess || !uploading ? "text-green-600 font-medium" : "text-[#1A4B69] font-medium"}>
+                  <span
+                    className={
+                      createSuccess || !uploading
+                        ? "text-green-600 font-medium"
+                        : "text-[#1A4B69] font-medium"
+                    }
+                  >
                     1. Uploading image...
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   {createSuccess ? (
-                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4 text-green-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   ) : (
                     <div className="w-4 h-4 border-2 border-[#1A4B69] border-t-transparent rounded-full animate-spin" />
                   )}
-                  <span className={createSuccess ? "text-green-600 font-medium" : "text-[#1A4B69] font-medium"}>
+                  <span
+                    className={
+                      createSuccess
+                        ? "text-green-600 font-medium"
+                        : "text-[#1A4B69] font-medium"
+                    }
+                  >
                     2. Creating auction...
                   </span>
                 </div>
                 {createSuccess && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex items-center gap-2 text-sm text-green-600 mb-1">
-                      <span className="font-medium">Auction created successfully!</span>
+                      <span className="font-medium">
+                        Auction created successfully!
+                      </span>
                     </div>
                     <p className="text-xs text-gray-500">
                       Your auction is now live and visible to bidders.
@@ -499,7 +541,11 @@ const AuctionPage = () => {
                     disabled={submitting || uploading}
                     className="px-4 py-2 bg-[#1A4B69] hover:bg-[#12364c] text-white text-sm font-semibold rounded-lg disabled:opacity-60"
                   >
-                    {uploading ? "Uploading..." : submitting ? "Creating..." : "Create"}
+                    {uploading
+                      ? "Uploading..."
+                      : submitting
+                        ? "Creating..."
+                        : "Create"}
                   </button>
                 </>
               )}

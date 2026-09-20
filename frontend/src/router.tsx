@@ -32,30 +32,26 @@ const router = createBrowserRouter([
       {
         path: "/report",
         element: <ReportPage />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="/report/analytics" replace />,
+          },
+          {
+            path: "analytics",
+            element: <ReportAnalyticsPage />,
+          },
+          {
+            path: "auction",
+            element: <ReportAuctionPage />,
+          },
+        ],
       },
     ],
   },
   {
     path: "*",
     element: <NotFoundPage />,
-  },
-  {
-    path: "/report",
-    element: <ReportPage />,
-    children: [
-      {
-        index: true,
-        element: <Navigate to="/report/analytics" replace />,
-      },
-      {
-        path: "analytics",
-        element: <ReportAnalyticsPage />,
-      },
-      {
-        path: "auction",
-        element: <ReportAuctionPage />,
-      },
-    ],
   },
 ]);
 

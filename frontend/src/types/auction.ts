@@ -47,6 +47,7 @@ export interface GetAuctionsParams {
   page?: number;
   limit?: number;
   isCompleted?: boolean;
+  search?: string;
 }
 
 /** Aggregate snapshot returned by GET /reporting/auction-summary */
