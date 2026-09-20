@@ -12,14 +12,14 @@ import (
 var ErrAuctionNotFound = errors.New("auction not found")
 
 type AuctionDetail struct {
-	Auction models.Auction
+	Auction       models.Auction
 	BidWinnerName *string
-	TotalBids int64
-	TotalBidders int64
+	TotalBids     int64
+	TotalBidders  int64
 }
 
 type TopBid struct {
-	Bid models.Bid
+	Bid      models.Bid
 	UserName string
 }
 
@@ -40,7 +40,8 @@ func (r *auctionDetailRepository) FindByID(ctx context.Context, id int64) (*Auct
 	query := `
 		SELECT
 			a.id, a.auction_name, a.description, a.image_link, a.bid_winner_id,
-			a.starting_price, a.last_price, a.created_at, a.end_time, a.is_completed,
+			a.starting_price, a.last_price, a.created_at, a.end_time,
+			(a.is_completed OR a.end_time <= NOW()) AS is_completed,
 			u.name AS bid_winner_name,
 			(SELECT COUNT(*) FROM bids b WHERE b.auction_id = a.id) AS total_bids,
 			(SELECT COUNT(DISTINCT b.user_id) FROM bids b WHERE b.auction_id = a.id) AS total_bidders
@@ -120,4 +121,3 @@ func (r *auctionDetailRepository) FindTopBids(ctx context.Context, auctionID int
 
 	return result, nil
 }
-

@@ -1,4 +1,4 @@
-package services
+package token
 
 import (
 	"errors"
@@ -13,8 +13,8 @@ import (
 var ErrInvalidToken = errors.New("invalid or expired token")
 
 type Claims struct {
-	Username string `json:"username"`
-	Role models.Role `json:"role"`
+	Username string      `json:"username"`
+	Role     models.Role `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -24,7 +24,7 @@ func (c *Claims) UserID() (int64, error) {
 
 type TokenManager struct {
 	secret []byte
-	ttl time.Duration
+	ttl    time.Duration
 }
 
 func NewTokenManager(secret string, ttl time.Duration) *TokenManager {
@@ -35,10 +35,10 @@ func (m *TokenManager) Generate(user *models.User) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		Username: user.Username,
-		Role: user.Role,
+		Role:     user.Role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject: strconv.FormatInt(user.ID, 10),
-			IssuedAt: jwt.NewNumericDate(now),
+			Subject:   strconv.FormatInt(user.ID, 10),
+			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(m.ttl)),
 		},
 	}

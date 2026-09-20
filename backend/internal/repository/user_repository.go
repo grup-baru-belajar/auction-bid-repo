@@ -9,7 +9,6 @@ import (
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/models"
 )
 
-
 var ErrUserNotFound = errors.New("user not found")
 
 type UserRepository interface {

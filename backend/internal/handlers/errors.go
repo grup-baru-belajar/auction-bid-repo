@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/token"
 )
 
 func respondBindError(c *gin.Context, err error) {
@@ -35,12 +36,12 @@ func respondBindError(c *gin.Context, err error) {
 	respondError(c, http.StatusBadRequest, "Invalid request body")
 }
 
-func respondWithError (c *gin.Context, err error) {
+func respondWithError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, services.ErrInvalidCredentials):
 		respondError(c, http.StatusUnauthorized, "Invalid username or password")
 
-	case errors.Is(err, services.ErrInvalidToken):
+	case errors.Is(err, token.ErrInvalidToken):
 		respondError(c, http.StatusUnauthorized, "Invalid or expired token")
 
 	case errors.Is(err, services.ErrAuctionNotFound):

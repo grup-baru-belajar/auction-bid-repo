@@ -17,6 +17,7 @@ import (
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/repository"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/routes"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/token"
 	wsh "github.com/grup-baru-belajar/auction-bid-repo/internal/websocket"
 )
 
@@ -60,7 +61,7 @@ var serveCmd = &cobra.Command{
 		bidRepo := repository.NewBidRepository(db)
 		reportingRepo := repository.NewReportingRepository(db)
 
-		tokenManager := services.NewTokenManager(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
+		tokenManager := token.NewTokenManager(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
 		authService := services.NewAuthService(userRepo, tokenManager)
 		auctionService := services.NewAuctionService(auctionRepo)
 		auctionDetailService := services.NewAuctionDetailService(auctionDetailRepo)

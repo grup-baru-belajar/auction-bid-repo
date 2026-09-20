@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/models"
-	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/token"
 )
 
 const ClaimsKey = "claims"
 
-func Auth(tokenManager *services.TokenManager) gin.HandlerFunc {
+func Auth(tokenManager *token.TokenManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -57,7 +57,7 @@ func RequireAdmin() gin.HandlerFunc {
 			return
 		}
 
-		claims, ok := val.(*services.Claims)
+		claims, ok := val.(*token.Claims)
 		if !ok || claims.Role != models.RoleAdmin {
 			c.AbortWithStatusJSON(http.StatusForbidden, models.APIResponse{
 				Success: false,
