@@ -7,6 +7,10 @@ import {
 import { uploadImage, deleteImage } from "../../services/api/uploadApi";
 import AuctionCard from "../../components/auction/AuctionCard";
 import Pagination from "../../components/common/Pagination";
+import {
+  IMAGE_BLOCKED_BY_NETWORK,
+  isNetworkOnlyError,
+} from "../../utils/image";
 
 const LIMIT = 10;
 
@@ -43,8 +47,11 @@ const AuctionPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [uploadedImagePublicId, setUploadedImagePublicId] = useState<string | null>(null);
+  const [uploadedImagePublicId, setUploadedImagePublicId] = useState<
+    string | null
+  >(null);
   const [createSuccess, setCreateSuccess] = useState(false);
+  const [imageNetworkError, setImageNetworkError] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -61,6 +68,17 @@ const AuctionPage = () => {
       if (imagePreview) URL.revokeObjectURL(imagePreview);
     };
   }, [imagePreview]);
+
+  useEffect(() => {
+    if (showModal || showConfirm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showModal, showConfirm]);
 
   const handleFilterChange = (value: string) => {
     if (value === "all") setIsCompletedFilter(undefined);
@@ -116,6 +134,7 @@ const AuctionPage = () => {
     setUploading(false);
     setUploadedImageUrl(null);
     setUploadedImagePublicId(null);
+    setImageNetworkError(false);
   };
 
   const handleValidate = () => {
@@ -152,18 +171,34 @@ const AuctionPage = () => {
     if (!imageFile) return;
     setSubmitting(true);
     setFormError("");
+    setImageNetworkError(false);
+
     let imageLink = "";
+    let newPublicId: string | null = null;
+
     try {
       if (uploadedImageUrl) {
         imageLink = uploadedImageUrl;
       } else {
         setUploading(true);
-        const result = await uploadImage(imageFile);
-        imageLink = result.url;
-        setUploadedImageUrl(result.url);
-        setUploadedImagePublicId(result.publicId);
-        setUploading(false);
+        try {
+          const result = await uploadImage(imageFile);
+          imageLink = result.url;
+          newPublicId = result.publicId;
+          setUploadedImageUrl(result.url);
+          setUploadedImagePublicId(result.publicId);
+        } catch (uploadErr: unknown) {
+          if (isNetworkOnlyError(uploadErr)) {
+            imageLink = IMAGE_BLOCKED_BY_NETWORK;
+            setImageNetworkError(true);
+          } else {
+            throw uploadErr;
+          }
+        } finally {
+          setUploading(false);
+        }
       }
+
       await dispatch(
         createAuction({
           auctionName: form.auctionName,
@@ -173,6 +208,7 @@ const AuctionPage = () => {
           endTime: new Date(form.endTime).toISOString(),
         }),
       ).unwrap();
+
       setCreateSuccess(true);
       dispatch(
         fetchAuctions({
@@ -182,13 +218,18 @@ const AuctionPage = () => {
         }),
       );
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      const serverMsg = axiosErr?.response?.data?.message;
-      if (uploadedImagePublicId) {
-        deleteImage(uploadedImagePublicId).catch(() => {});
+      const publicIdToDelete = newPublicId ?? uploadedImagePublicId;
+      if (publicIdToDelete) {
+        deleteImage(publicIdToDelete).catch(() => {});
+        setUploadedImageUrl(null);
+        setUploadedImagePublicId(null);
       }
+
+      setImageNetworkError(false);
+      const axiosErr = err as { response?: { data?: { message?: string } } };
       setFormError(
-        serverMsg || "Failed to create the auction. Please try again.",
+        axiosErr?.response?.data?.message ||
+          "Failed to create the auction. Please try again.",
       );
       setShowConfirm(false);
       setShowModal(true);
@@ -436,36 +477,74 @@ const AuctionPage = () => {
               <div className="mb-5 space-y-2">
                 <div className="flex items-center gap-2 text-sm">
                   {createSuccess || !uploading ? (
-                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4 text-green-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   ) : (
                     <div className="w-4 h-4 border-2 border-[#1A4B69] border-t-transparent rounded-full animate-spin" />
                   )}
-                  <span className={createSuccess || !uploading ? "text-green-600 font-medium" : "text-[#1A4B69] font-medium"}>
+                  <span
+                    className={
+                      createSuccess || !uploading
+                        ? "text-green-600 font-medium"
+                        : "text-[#1A4B69] font-medium"
+                    }
+                  >
                     1. Uploading image...
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   {createSuccess ? (
-                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4 text-green-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   ) : (
                     <div className="w-4 h-4 border-2 border-[#1A4B69] border-t-transparent rounded-full animate-spin" />
                   )}
-                  <span className={createSuccess ? "text-green-600 font-medium" : "text-[#1A4B69] font-medium"}>
+                  <span
+                    className={
+                      createSuccess
+                        ? "text-green-600 font-medium"
+                        : "text-[#1A4B69] font-medium"
+                    }
+                  >
                     2. Creating auction...
                   </span>
                 </div>
                 {createSuccess && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex items-center gap-2 text-sm text-green-600 mb-1">
-                      <span className="font-medium">Auction created successfully!</span>
+                      <span className="font-medium">
+                        Auction created successfully!
+                      </span>
                     </div>
                     <p className="text-xs text-gray-500">
                       Your auction is now live and visible to bidders.
                     </p>
+                    {imageNetworkError && (
+                      <p className="text-xs text-amber-600 mt-2">
+                        The image could not be uploaded because the network
+                        blocked the upload (image_network_error). The auction
+                        was created with a placeholder image. Please try
+                        uploading the image again later.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -499,7 +578,11 @@ const AuctionPage = () => {
                     disabled={submitting || uploading}
                     className="px-4 py-2 bg-[#1A4B69] hover:bg-[#12364c] text-white text-sm font-semibold rounded-lg disabled:opacity-60"
                   >
-                    {uploading ? "Uploading..." : submitting ? "Creating..." : "Create"}
+                    {uploading
+                      ? "Uploading..."
+                      : submitting
+                        ? "Creating..."
+                        : "Create"}
                   </button>
                 </>
               )}
