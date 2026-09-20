@@ -14,7 +14,7 @@ const (
 	maxIdleConns    = 25
 	connMaxLifetime = 5 * time.Minute
 	connMaxIdleTime = 5 * time.Minute
-	pingTimeout = 15 * time.Second
+	pingTimeout     = 15 * time.Second
 )
 
 func New(ctx context.Context, dsn string) (*sql.DB, error) {

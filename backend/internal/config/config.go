@@ -17,8 +17,8 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Env  string `mapstructure:"env"`
-	Port int    `mapstructure:"port"`
+	Env         string   `mapstructure:"env"`
+	Port        int      `mapstructure:"port"`
 	CORSOrigins []string `mapstructure:"cors_origins"`
 }
 

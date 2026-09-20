@@ -8,7 +8,7 @@ import (
 
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/middlewares"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/models"
-	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/token"
 )
 
 func (h *Handler) PostBid(c *gin.Context) {
@@ -24,7 +24,7 @@ func (h *Handler) PostBid(c *gin.Context) {
 		return
 	}
 
-	claims, ok := val.(*services.Claims)
+	claims, ok := val.(*token.Claims)
 	if !ok {
 		respondError(c, http.StatusUnauthorized, "Unauthorized")
 		return

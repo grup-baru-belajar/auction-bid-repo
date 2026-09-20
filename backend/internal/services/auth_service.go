@@ -7,6 +7,7 @@ import (
 
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/models"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/repository"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/token"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,18 +18,18 @@ type AuthService interface {
 }
 
 type authService struct {
-	users repository.UserRepository
-	tokens *TokenManager
+	users  repository.UserRepository
+	tokens *token.TokenManager
 }
 
-func NewAuthService(users repository.UserRepository, tokens *TokenManager) AuthService {
+func NewAuthService(users repository.UserRepository, tokens *token.TokenManager) AuthService {
 	return &authService{users: users, tokens: tokens}
 }
 
 func (s *authService) Login(ctx context.Context, req models.LoginRequest) (*models.LoginResponse, error) {
 	user, err := s.users.FindByUsername(ctx, req.Username)
 	if err != nil {
-		if errors.Is(err , repository.ErrUserNotFound) {
+		if errors.Is(err, repository.ErrUserNotFound) {
 			return nil, ErrInvalidCredentials
 		}
 		return nil, fmt.Errorf("find user: %w", err)

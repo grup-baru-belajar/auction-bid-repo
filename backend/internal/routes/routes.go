@@ -5,11 +5,11 @@ import (
 
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/handlers"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/middlewares"
-	"github.com/grup-baru-belajar/auction-bid-repo/internal/services"
+	"github.com/grup-baru-belajar/auction-bid-repo/internal/token"
 	wsh "github.com/grup-baru-belajar/auction-bid-repo/internal/websocket"
 )
 
-func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *services.TokenManager, wsHandler *wsh.Handler) {
+func Setup(r *gin.Engine, h *handlers.Handler, tokenManager *token.TokenManager, wsHandler *wsh.Handler) {
 	api := r.Group("/api/v1")
 	api.POST("/login", h.PostLogin)
 
