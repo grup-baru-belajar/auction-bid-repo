@@ -16,16 +16,21 @@ var (
 	ErrInvalidEndTime       = errors.New("end time must be in the future")
 )
 
+type auctionRepository interface {
+	Create(ctx context.Context, auction *models.Auction) (*models.Auction, error)
+	FindAll(ctx context.Context, limit, offset int, isCompleted *bool, search string) ([]repository.AuctionWithWinner, int64, error)
+}
+
 type AuctionService interface {
 	CreateAuction(ctx context.Context, req models.AuctionRequest) (*models.AuctionResponse, error)
 	GetAuctions(ctx context.Context, query models.GetAuctionsQuery) ([]models.AuctionResponse, models.PaginationResponse, error)
 }
 
 type auctionService struct {
-	repo repository.AuctionRepository
+	repo auctionRepository
 }
 
-func NewAuctionService(repo repository.AuctionRepository) AuctionService {
+func NewAuctionService(repo auctionRepository) AuctionService {
 	return &auctionService{repo: repo}
 }
 

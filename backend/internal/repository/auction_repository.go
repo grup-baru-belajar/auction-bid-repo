@@ -14,20 +14,15 @@ type AuctionWithWinner struct {
 	BidWinnerName *string
 }
 
-type AuctionRepository interface {
-	Create(ctx context.Context, auction *models.Auction) (*models.Auction, error)
-	FindAll(ctx context.Context, limit, offset int, isCompleted *bool, search string) ([]AuctionWithWinner, int64, error)
-}
-
-type auctionRepository struct {
+type AuctionRepository struct {
 	db *sql.DB
 }
 
-func NewAuctionRepository(db *sql.DB) AuctionRepository {
-	return &auctionRepository{db: db}
+func NewAuctionRepository(db *sql.DB) *AuctionRepository {
+	return &AuctionRepository{db: db}
 }
 
-func (r *auctionRepository) Create(ctx context.Context, auction *models.Auction) (*models.Auction, error) {
+func (r *AuctionRepository) Create(ctx context.Context, auction *models.Auction) (*models.Auction, error) {
 	query := `
 		INSERT INTO auctions (
 			auction_name, description, image_link, starting_price, last_price, end_time, is_completed
@@ -53,7 +48,7 @@ func (r *auctionRepository) Create(ctx context.Context, auction *models.Auction)
 	return auction, nil
 }
 
-func (r *auctionRepository) FindAll(ctx context.Context, limit, offset int, isCompleted *bool, search string) ([]AuctionWithWinner, int64, error) {
+func (r *AuctionRepository) FindAll(ctx context.Context, limit, offset int, isCompleted *bool, search string) ([]AuctionWithWinner, int64, error) {
 	countQuery := `SELECT COUNT(*) FROM auctions a`
 	selectQuery := `
 		SELECT 

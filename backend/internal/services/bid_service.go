@@ -7,6 +7,7 @@ import (
 
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/models"
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/repository"
+	"github.com/shopspring/decimal"
 )
 
 var (
@@ -14,15 +15,19 @@ var (
 	ErrBidTooLow        = errors.New("bid price must be greater than current price")
 )
 
+type bidRepository interface {
+	Place(ctx context.Context, auctionID, userID int64, bidPrice decimal.Decimal) (*models.Bid, error)
+}
+
 type BidService interface {
 	PlaceBid(ctx context.Context, userID int64, req models.BidRequest) (*models.BidResponse, error)
 }
 
 type bidService struct {
-	repo repository.BidRepository
+	repo bidRepository
 }
 
-func NewBidService(repo repository.BidRepository) BidService {
+func NewBidService(repo bidRepository) BidService {
 	return &bidService{repo: repo}
 }
 

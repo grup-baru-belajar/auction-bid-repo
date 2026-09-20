@@ -16,19 +16,15 @@ var (
 	ErrBidTooLow        = errors.New("bid price must be greater than current price")
 )
 
-type BidRepository interface {
-	Place(ctx context.Context, auctionID, userID int64, bidPrice decimal.Decimal) (*models.Bid, error)
-}
-
-type bidRepository struct {
+type BidRepository struct {
 	db *sql.DB
 }
 
-func NewBidRepository(db *sql.DB) BidRepository {
-	return &bidRepository{db: db}
+func NewBidRepository(db *sql.DB) *BidRepository {
+	return &BidRepository{db: db}
 }
 
-func (r *bidRepository) Place(ctx context.Context, auctionID, userID int64, bidPrice decimal.Decimal) (*models.Bid, error) {
+func (r *BidRepository) Place(ctx context.Context, auctionID, userID int64, bidPrice decimal.Decimal) (*models.Bid, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("begin bid tx: %w", err)
