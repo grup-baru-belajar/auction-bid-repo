@@ -48,24 +48,6 @@ const router = createBrowserRouter([
     path: "*",
     element: <NotFoundPage />,
   },
-  {
-    path: "/report",
-    element: <ReportPage />,
-    children: [
-      {
-        index: true,
-        element: <Navigate to="/report/analytics" replace />,
-      },
-      {
-        path: "analytics",
-        element: <ReportAnalyticsPage />,
-      },
-      {
-        path: "auction",
-        element: <ReportAuctionPage />,
-      },
-    ],
-  },
 ]);
 
 export default router;
