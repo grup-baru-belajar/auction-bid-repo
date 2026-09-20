@@ -140,9 +140,8 @@ const auctionsSlice = createSlice({
           state.list.unshift(action.payload);
         },
       )
-      .addCase(createAuction.rejected, (state, action) => {
+      .addCase(createAuction.rejected, (state) => {
         state.loading = false;
-        state.error = action.payload || "Failed to create auction";
       });
   },
 });

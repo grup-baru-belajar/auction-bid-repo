@@ -11,9 +11,10 @@ import (
 )
 
 type Config struct {
-	App      AppConfig      `mapstructure:"app"`
-	Database DatabaseConfig `mapstructure:"database"`
-	JWT      JWTConfig      `mapstructure:"jwt"`
+	App        AppConfig        `mapstructure:"app"`
+	Database   DatabaseConfig   `mapstructure:"database"`
+	JWT        JWTConfig        `mapstructure:"jwt"`
+	Cloudinary CloudinaryConfig `mapstructure:"cloudinary"`
 }
 
 type AppConfig struct {
@@ -35,6 +36,12 @@ type DatabaseConfig struct {
 type JWTConfig struct {
 	Secret    string        `mapstructure:"secret"`
 	ExpiresIn time.Duration `mapstructure:"expires_in"`
+}
+
+type CloudinaryConfig struct {
+	CloudName string `mapstructure:"cloud_name"`
+	APIKey    string `mapstructure:"api_key"`
+	APISecret string `mapstructure:"api_secret"`
 }
 
 func (c DatabaseConfig) DSN() string {
@@ -77,6 +84,9 @@ func Load(configPath, envPath string, configRequired, envRequired bool) (*Config
 		"database.connect_timeout": "POSTGRES_CONNECT_TIMEOUT",
 		"jwt.secret":               "JWT_SECRET",
 		"jwt.expires_in":           "JWT_EXPIRES_IN",
+		"cloudinary.cloud_name":    "CLOUDINARY_CLOUD_NAME",
+		"cloudinary.api_key":       "CLOUDINARY_API_KEY",
+		"cloudinary.api_secret":    "CLOUDINARY_API_SECRET",
 	}
 
 	for key, env := range bindings {
@@ -120,6 +130,15 @@ func (c *Config) validate() error {
 	}
 	if c.JWT.ExpiresIn <= 0 {
 		return errors.New("config: jwt.expires_in harus positif, misalnya 24h")
+	}
+	if c.Cloudinary.CloudName == "" {
+		return errors.New("config: CLOUDINARY_CLOUD_NAME wajib diisi di .env")
+	}
+	if c.Cloudinary.APIKey == "" {
+		return errors.New("config: CLOUDINARY_API_KEY wajib diisi di .env")
+	}
+	if c.Cloudinary.APISecret == "" {
+		return errors.New("config: CLOUDINARY_API_SECRET wajib diisi di .env")
 	}
 	return nil
 }

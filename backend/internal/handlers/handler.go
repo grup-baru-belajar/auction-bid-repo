@@ -15,6 +15,7 @@ type Handler struct {
 	bidService           services.BidService
 	reportingService     services.ReportingService
 	wsHandler            *wsh.Handler
+	cloudinaryService    services.CloudinaryService
 }
 
 func New(
@@ -24,6 +25,7 @@ func New(
 	bidService services.BidService,
 	reportingService services.ReportingService,
 	wsHandler *wsh.Handler,
+	cloudinaryService services.CloudinaryService,
 ) *Handler {
 	return &Handler{
 		authService:          authService,
@@ -32,6 +34,7 @@ func New(
 		bidService:           bidService,
 		reportingService:     reportingService,
 		wsHandler:            wsHandler,
+		cloudinaryService:    cloudinaryService,
 	}
 }
 
