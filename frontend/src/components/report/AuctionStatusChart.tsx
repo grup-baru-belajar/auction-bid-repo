@@ -32,8 +32,8 @@ const AuctionStatusChart = ({ data }: AuctionStatusChartProps) => {
           No auctions yet.
         </div>
       ) : (
-        <div className="flex items-center gap-6">
-          <div className="relative w-44 h-44 shrink-0">
+        <div className="h-full flex flex-col items-center justify-center gap-8">
+          <div className="relative w-48 h-48 shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -72,7 +72,7 @@ const AuctionStatusChart = ({ data }: AuctionStatusChartProps) => {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col gap-2 min-w-0">
+          <div className="w-full flex flex-col gap-2 min-w-0">
             {chartData.map((entry) => {
               const pct =
                 total > 0 ? Math.round((entry.value / total) * 100) : 0;

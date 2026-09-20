@@ -3,7 +3,11 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { logout } from "../../features/auth/authSlice";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-const Topbar = () => {
+interface TopbarProps {
+  onMenuClick: () => void;
+}
+
+const Topbar = ({ onMenuClick }: TopbarProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -42,19 +46,38 @@ const Topbar = () => {
 
   return (
     <header className="bg-sky-500 sticky top-0 z-30">
-      <div className="flex items-center justify-between gap-8 px-6 py-3">
+      <div className="flex items-center justify-between gap-2 sm:gap-4 lg:gap-8 px-3 sm:px-6 py-3">
         <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={onMenuClick}
+            aria-label="Open menu"
+            className="lg:hidden -ml-1 p-2 rounded-md text-sky-50 hover:bg-sky-600 transition-colors"
+          >
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
           {isAdmin && (
             <span className="text-xs font-semibold bg-sky-800 text-white px-2 py-0.5 rounded">
               ADMIN
             </span>
           )}
-          <h1 className="text-xl font-semibold text-sky-50">Auction App</h1>
+          <h1 className="hidden sm:block text-xl font-semibold text-sky-50">
+            Auction App
+          </h1>
         </div>
 
         <form
           onSubmit={handleSearchSubmit}
-          className="flex-1 max-w-lg flex items-center"
+          className="flex-1 min-w-0 max-w-lg flex items-center"
         >
           <input
             type="text"

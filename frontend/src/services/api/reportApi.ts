@@ -5,6 +5,7 @@ import type {
   AuctionActivity,
   AuctionStatusCount,
   TransactionWeek,
+  TopAuction,
 } from "../../types";
 
 export const reportApi = {
@@ -41,4 +42,8 @@ export const reportApi = {
         params: { weeks },
       },
     ),
+
+  /** GET /reporting/top-auction (admin only). Top 5 auctions by total bids. */
+  getTopAuctions: () =>
+    apiClient.get<ApiResponse<TopAuction[]>>("/v1/reporting/top-auction"),
 };

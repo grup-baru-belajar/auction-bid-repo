@@ -5,6 +5,7 @@ import {
   fetchAuctionActivity,
   fetchAuctionStatus,
   fetchAuctionSummary,
+  fetchTopAuctions,
   fetchTotalBidders,
   fetchTransactionOverview,
   setActivityIntervalDays,
@@ -14,6 +15,7 @@ import AuctionActivityChart from "../../components/report/AuctionActivityChart";
 import AuctionStatusChart from "../../components/report/AuctionStatusChart";
 import BiddingActivityChart from "../../components/report/BiddingActivityChart";
 import TransactionOverviewChart from "../../components/report/TransactionOverviewChart";
+import TopAuctionsTable from "../../components/report/TopAuctionsTable";
 
 const TRANSACTION_WEEKS = 4;
 
@@ -29,6 +31,7 @@ const ReportAnalyticsPage = () => {
     activityLoading,
     statusBreakdown,
     transactionOverview,
+    topAuctions,
   } = useAppSelector((state) => state.reports);
 
   useEffect(() => {
@@ -36,6 +39,7 @@ const ReportAnalyticsPage = () => {
     dispatch(fetchTotalBidders());
     dispatch(fetchAuctionStatus());
     dispatch(fetchTransactionOverview(TRANSACTION_WEEKS));
+    dispatch(fetchTopAuctions());
   }, [dispatch]);
 
   useEffect(() => {
@@ -102,6 +106,8 @@ const ReportAnalyticsPage = () => {
             />
             <TransactionOverviewChart data={transactionOverview ?? []} />
           </div>
+
+          <TopAuctionsTable data={topAuctions ?? []} />
         </div>
       )}
     </div>
