@@ -65,7 +65,11 @@ func (h *Handler) GetAuctionStatus(c *gin.Context) {
 }
 
 func (h *Handler) GetTotalBidders(c *gin.Context) {
-	interval := c.Query("interval") + " days"
+	interval := c.Query("interval")
+	if interval == "" {
+		interval = "7"
+	}
+	interval = interval + " days"
 	auctionId := c.Query("auctionId")
 
 	totalBidders, err := h.reportingService.GetTotalBidders(c.Request.Context(), interval, auctionId)
