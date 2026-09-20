@@ -48,3 +48,13 @@ export interface GetAuctionsParams {
   limit?: number;
   isCompleted?: boolean;
 }
+
+/** Aggregate snapshot returned by GET /reporting/auction-summary */
+export interface AuctionSummary {
+  totalAuctions: number;
+  ongoingAuctions: number;
+  completedAuctions: number;
+  totalBidsOngoing: number;
+  totalBidsCompleted: number;
+  totalBidsAll: number;
+}
