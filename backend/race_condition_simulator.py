@@ -10,14 +10,14 @@ import requests
 import time
 import sys
 from datetime import datetime
-from decimal import Decimal
 from typing import List, Dict, Any
 
 # Configuration
 API_URL = "http://localhost:8080"
+API_BID_PATH = "/api/v1/bid"
 AUCTION_ID = 1
 NUM_CONCURRENT_BIDS = 10
-AUTH_TOKEN = "your_token_here"  # Replace with valid token
+AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpvaG4iLCJyb2xlIjoiVVNFUiIsInN1YiI6IjIiLCJleHAiOjE3OTAwNTAyODYsImlhdCI6MTc4OTk2Mzg4Nn0.sW-Nt6oiBBU-tiv-1omdtwo40rftb264vkEQkEOPm8s"  # Replace with valid token
 
 class BidSimulator:
     def __init__(self, api_url: str, auction_id: int, auth_token: str):
@@ -26,6 +26,29 @@ class BidSimulator:
         self.auth_token = auth_token
         self.results: List[Dict[str, Any]] = []
         self.lock_time = None
+
+    def get_current_last_price(self) -> float:
+        """Fetch current auction last price so concurrent bids can target the next valid price."""
+        headers = {
+            "Authorization": f"Bearer {self.auth_token}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.get(
+            f"{self.api_url}/api/v1/auctions/{self.auction_id}",
+            headers=headers,
+            timeout=5,
+        )
+        response.raise_for_status()
+
+        payload = response.json()
+        data = payload.get("data", payload)
+        last_price = data.get("lastPrice")
+
+        if last_price is None:
+            raise ValueError("auction lastPrice is missing from API response")
+
+        return float(last_price)
     
     def place_bid(self, bidder_id: int, bid_price: float) -> Dict[str, Any]:
         """Place a single bid and record result"""
@@ -35,7 +58,7 @@ class BidSimulator:
         }
         
         payload = {
-            "auctionID": self.auction_id,
+            "auctionId": self.auction_id,
             "bidPrice": bid_price
         }
         
@@ -43,7 +66,7 @@ class BidSimulator:
         
         try:
             response = requests.post(
-                f"{self.api_url}/bids",
+                f"{self.api_url}{API_BID_PATH}",
                 json=payload,
                 headers=headers,
                 timeout=5
@@ -95,13 +118,15 @@ class BidSimulator:
         print("="*60)
         
         self.results = []
+        target_price = self.get_current_last_price() + 1
+        print(f"Target concurrent bid price: {target_price}")
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_CONCURRENT_BIDS) as executor:
             futures = []
             
             # Synchronize bidders to start at approximately the same time
             for i in range(NUM_CONCURRENT_BIDS):
-                bid_price = 100 + i
+                bid_price = target_price
                 future = executor.submit(self.place_bid, i, bid_price)
                 futures.append(future)
             
@@ -124,17 +149,18 @@ class BidSimulator:
         print("="*60)
         
         self.results = []
-        price = 100
         
         for burst in range(num_bursts):
             print(f"\n--- Burst {burst + 1} ---")
             burst_results = []
+            target_price = self.get_current_last_price() + 1
+            print(f"  Target burst bid price: {target_price}")
             
             with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_CONCURRENT_BIDS // num_bursts) as executor:
                 futures = []
                 
                 for i in range(NUM_CONCURRENT_BIDS // num_bursts):
-                    bid_price = price + i
+                    bid_price = target_price
                     bidder_id = burst * (NUM_CONCURRENT_BIDS // num_bursts) + i
                     future = executor.submit(self.place_bid, bidder_id, bid_price)
                     futures.append(future)
@@ -147,8 +173,6 @@ class BidSimulator:
             for result in burst_results:
                 status = "✅ ACCEPTED" if result["accepted"] else "❌ REJECTED"
                 print(f"  Bid #{result['bidder_id']}: Price={result['bid_price']} | {status}")
-            
-            price += NUM_CONCURRENT_BIDS // num_bursts
             if burst < num_bursts - 1:
                 print(f"Waiting {delay_ms}ms before next burst...")
                 time.sleep(delay_ms / 1000)
@@ -205,7 +229,7 @@ class BidSimulator:
 
 
 def main():
-    print("🔥 Bidding System - Race Condition Simulator")
+    print("Bidding System - Race Condition Simulator")
     print("="*60)
     print(f"API URL: {API_URL}")
     print(f"Auction ID: {AUCTION_ID}")
