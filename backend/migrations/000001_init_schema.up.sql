@@ -41,8 +41,3 @@ CREATE TABLE bids (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
-
-CREATE INDEX idx_auctions_completed_end_time ON auctions(is_completed, end_time);
-
-CREATE INDEX idx_bids_auction_price_desc ON bids(auction_id, bid_price DESC);
-
