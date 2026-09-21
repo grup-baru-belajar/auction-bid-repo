@@ -194,7 +194,6 @@ func (r *reportingRepository) GetAuctionStatus(ctx context.Context) ([]models.Au
 func (r *reportingRepository) GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error) {
 	var query string
 	args := []any{}
-
 	if interval == "all" {
 		query = `SELECT COUNT(DISTINCT user_id) AS total_bidders FROM bids`
 		if auctionId != "" {

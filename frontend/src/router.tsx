@@ -6,7 +6,6 @@ import ReportPage from "./pages/report/ReportPage";
 import Layout from "./components/layout/Layout";
 import NotFoundPage from "./pages/NotFoundPage";
 import ReportAnalyticsPage from "./pages/report/ReportAnalyticsPage";
-import ReportAuctionPage from "./pages/report/ReportAuctionPage";
 
 const router = createBrowserRouter([
   {
@@ -38,7 +37,7 @@ const router = createBrowserRouter([
           },
           {
             path: "auction",
-            element: <ReportAuctionPage />,
+            element: <AuctionPage />,
           },
         ],
       },
