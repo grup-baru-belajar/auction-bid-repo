@@ -28,11 +28,11 @@ const useLoginController = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await dispatch(login(formData)).unwrap();
-      toast.success('Login berhasil!');
-      navigate('/');
+      const result = await dispatch(login(formData)).unwrap();
+      toast.success("Login berhasil!");
+      navigate(result.role === "ADMIN" ? "/report/auction" : "/");
     } catch (err) {
-      toast.error(err as string || 'Login gagal');
+      toast.error((err as string) || "Login gagal");
     }
   };
 
