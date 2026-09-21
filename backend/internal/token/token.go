@@ -36,11 +36,9 @@ func (m *TokenManager) Generate(user *models.User) (string, error) {
 	claims := Claims{
 		Username: user.Username,
 		Role:     user.Role,
-		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   strconv.FormatInt(user.ID, 10),
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(m.ttl)),
-		},
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(m.secret)
 }
