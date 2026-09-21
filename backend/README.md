@@ -102,3 +102,8 @@ Buka http://localhost:8081, lalu isi:
 | Password | dari `.env` |
 | Database | dari `.env` |
 
+
+
+
+PG_DSN="host=localhost port=5432 sslmode=disable user=auction password=$(grep -m1 '^POSTGRES_PASSWORD=' .env | cut -d= -f2-) dbname=auction_bid" \
+    go test -tags integration -count=1 -v ./internal/repository/
