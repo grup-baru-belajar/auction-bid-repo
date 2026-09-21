@@ -17,7 +17,7 @@ API_URL = "http://localhost:8080"
 API_BID_PATH = "/api/v1/bid"
 AUCTION_ID = 1
 NUM_CONCURRENT_BIDS = 10
-AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpvaG4iLCJyb2xlIjoiVVNFUiIsInN1YiI6IjIiLCJleHAiOjE3OTAwNTAyODYsImlhdCI6MTc4OTk2Mzg4Nn0.sW-Nt6oiBBU-tiv-1omdtwo40rftb264vkEQkEOPm8s"  # Replace with valid token
+AUTH_TOKEN = "{}"  # Replace with valid token
 
 class BidSimulator:
     def __init__(self, api_url: str, auction_id: int, auth_token: str):
@@ -108,7 +108,7 @@ class BidSimulator:
             result = self.place_bid(i, bid_price)
             self.results.append(result)
             
-            status = "✅ ACCEPTED" if result["accepted"] else "❌ REJECTED"
+            status = "ACCEPTED" if result["accepted"] else "REJECTED"
             print(f"Bid #{i}: Price={bid_price} | {status} | Time: {result['elapsed_time']:.3f}s")
     
     def simulate_concurrent_bids(self) -> None:
@@ -139,7 +139,7 @@ class BidSimulator:
         self.results.sort(key=lambda x: x["timestamp"])
         
         for result in self.results:
-            status = "✅ ACCEPTED" if result["accepted"] else "❌ REJECTED"
+            status = "ACCEPTED" if result["accepted"] else "REJECTED"
             print(f"Bid #{result['bidder_id']}: Price={result['bid_price']} | {status} | Time: {result['elapsed_time']:.3f}s")
     
     def simulate_burst_bids(self, num_bursts: int = 3, delay_ms: int = 100) -> None:
@@ -171,7 +171,7 @@ class BidSimulator:
                     burst_results.append(result)
             
             for result in burst_results:
-                status = "✅ ACCEPTED" if result["accepted"] else "❌ REJECTED"
+                status = "ACCEPTED" if result["accepted"] else "REJECTED"
                 print(f"  Bid #{result['bidder_id']}: Price={result['bid_price']} | {status}")
             if burst < num_bursts - 1:
                 print(f"Waiting {delay_ms}ms before next burst...")
@@ -191,8 +191,8 @@ class BidSimulator:
         rejected = [r for r in self.results if not r["accepted"]]
         
         print(f"\nTotal Bids: {len(self.results)}")
-        print(f"✅ Accepted: {len(accepted)} ({len(accepted)/len(self.results)*100:.1f}%)")
-        print(f"❌ Rejected: {len(rejected)} ({len(rejected)/len(self.results)*100:.1f}%)")
+        print(f"Accepted: {len(accepted)} ({len(accepted)/len(self.results)*100:.1f}%)")
+        print(f"Rejected: {len(rejected)} ({len(rejected)/len(self.results)*100:.1f}%)")
         
         if accepted:
             print(f"\nAccepted Bids:")
@@ -212,20 +212,20 @@ class BidSimulator:
         # Check if multiple bids were accepted for same price
         prices = [r["bid_price"] for r in accepted]
         if len(prices) != len(set(prices)):
-            print(f"  ⚠️  DETECTED: Multiple bids at same price level")
+            print(f"DETECTED: Multiple bids at same price level")
         
         # Check if bids with lower price were accepted after higher price
         for i in range(len(self.results) - 1):
             if (self.results[i]["accepted"] and self.results[i+1]["accepted"] and 
                 self.results[i]["bid_price"] > self.results[i+1]["bid_price"]):
-                print(f"  ⚠️  DETECTED: Lower bid accepted after higher bid")
+                print(f"DETECTED: Lower bid accepted after higher bid")
                 break
     
     def export_results(self, filename: str = "race_condition_results.json") -> None:
         """Export results to file"""
         with open(filename, 'w') as f:
             json.dump(self.results, f, indent=2, default=str)
-        print(f"\n✅ Results exported to {filename}")
+        print(f"\nResults exported to {filename}")
 
 
 def main():
@@ -253,10 +253,10 @@ def main():
         simulator.export_results()
         
     except KeyboardInterrupt:
-        print("\n\n⚠️  Test interrupted by user")
+        print("\n\nTest interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nError: {e}")
         sys.exit(1)
 
 
