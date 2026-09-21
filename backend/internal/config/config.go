@@ -64,7 +64,7 @@ func Load(configPath, envPath string, configRequired, envRequired bool) (*Config
 
 	v.SetDefault("app.env", "development")
 	v.SetDefault("app.port", 8080)
-	v.SetDefault("app.cors_origins", []string{"http://localhost:5173", "http://localhost:5174"})
+	v.SetDefault("app.cors_origins", []string{"http://localhost:5173"})
 	v.SetDefault("database.host", "localhost")
 	v.SetDefault("database.port", 5432)
 	v.SetDefault("database.sslmode", "disable")

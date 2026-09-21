@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/grup-baru-belajar/auction-bid-repo/internal/models"
 )
@@ -15,6 +16,7 @@ type ReportingRepository interface {
 	GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error)
 	GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error)
 	GetTransactionOverview(ctx context.Context, weeks int) ([]models.TransactionWeek, error)
+	GetTopBidders(ctx context.Context, limit int, sortBy string) ([]models.TopBidder, error)
 }
 
 type reportingRepository struct {
@@ -187,12 +189,11 @@ func (r *reportingRepository) GetAuctionStatus(ctx context.Context) ([]models.Au
 }
 
 /*
-1. get total bidders from every aution and 1 auction in the last x date
+1. get total bidders from every auction and 1 auction in the last x date
 */
 func (r *reportingRepository) GetTotalBidders(ctx context.Context, interval string, auctionId string) (int, error) {
 	var query string
 	args := []any{}
-
 	if interval == "all" {
 		query = `SELECT COUNT(DISTINCT user_id) AS total_bidders FROM bids`
 		if auctionId != "" {
@@ -333,4 +334,55 @@ func (r *reportingRepository) GetTransactionOverview(ctx context.Context, weeks 
 	}
 
 	return result, nil
+}
+
+func (r *reportingRepository) GetTopBidders(ctx context.Context, limit int, sortBy string) ([]models.TopBidder, error) {
+	query := `
+		SELECT 
+		u.id, 
+		u.username, 
+		u.name, 
+		COALESCE(SUM(a.last_price), 0) AS total_money_spent, 
+		COUNT(a.bid_winner_id) AS total_wins,
+		(CURRENT_DATE - 
+			(
+				SELECT MAX(b.created_at)::DATE 
+				FROM bids b 
+				WHERE b.user_id = u.id
+			)
+		) || ' days ago' AS last_bid_ago
+		FROM users u 
+		INNER JOIN auctions a ON u.id = a.bid_winner_id
+		WHERE a.is_completed = TRUE AND a.end_time <= CURRENT_TIMESTAMP
+		GROUP BY u.id, u.username, u.name
+	`
+	if sortBy == "amount" {
+		query += ` ORDER BY total_money_spent DESC`
+	} else if sortBy == "transaction_count" {
+		query += ` ORDER BY total_wins DESC`
+	} else {
+		return nil, fmt.Errorf("invalid sortBy value: %s", sortBy)
+	}
+	query += ` LIMIT $1`
+	rows, err := r.db.QueryContext(ctx, query, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var topBidders []models.TopBidder
+
+	for rows.Next() {
+		var bidder models.TopBidder
+		if err := rows.Scan(&bidder.UserID, &bidder.Username, &bidder.Name, &bidder.TotalMoneySpent, &bidder.TotalWins, &bidder.LastBidAgo); err != nil {
+			return nil, err
+		}
+		topBidders = append(topBidders, bidder)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return topBidders, nil
 }

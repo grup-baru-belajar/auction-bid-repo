@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks'; 
 import { login } from '../../features/auth/authSlice';
 import toast from 'react-hot-toast';
@@ -28,11 +28,11 @@ const useLoginController = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await dispatch(login(formData)).unwrap();
-      toast.success('Login berhasil! 👋');
-      navigate('/');
+      const result = await dispatch(login(formData)).unwrap();
+      toast.success("Login berhasil!");
+      navigate(result.role === "ADMIN" ? "/report/auction" : "/");
     } catch (err) {
-      toast.error(err as string || 'Login gagal');
+      toast.error((err as string) || "Login gagal");
     }
   };
 
@@ -54,8 +54,8 @@ const LoginPage: React.FC = () => {
       <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col md:flex-row w-full max-w-[900px] border border-gray-200 overflow-hidden">
         <div className="hidden md:block w-1/2 p-3">
           <img
-            src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-            alt="Abstract Art"
+            src="./src/assets/bid_img.webp"
+            alt="Auction Picture"
             className="w-full h-full object-cover rounded-xl min-h-[500px]"
           />
         </div>
@@ -100,7 +100,6 @@ const LoginPage: React.FC = () => {
                   Password
                 </label>
                 
-                {/* Wadah relative harus MEMBUNGKUS input dan tombol */}
                 <div className="relative flex items-center">
                   
                   <input
@@ -110,12 +109,10 @@ const LoginPage: React.FC = () => {
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
-                    // Tambahkan pr-12 di sini agar ada ruang untuk ikon mata di sebelah kanan
                     className="w-full px-4 py-2.5 pr-12 border border-gray-200 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1A4B69] focus:border-transparent transition-all"
                     required
                   />
 
-                  {/* Tombol toggle mata posisinya absolute di sisi kanan */}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -137,11 +134,11 @@ const LoginPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex justify-end pt-1 pb-3">
+            {/* <div className="flex justify-end pt-1 pb-3">
               <Link to="/forgot-password" className="text-sm text-[#3EA2E8] hover:underline">
                 Forgot Password?
               </Link>
-            </div>
+            </div> */}
 
             <div>
               <button

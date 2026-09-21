@@ -15,6 +15,7 @@ type ReportingService interface {
 	GetTotalTransaction(ctx context.Context, interval string) (models.TotalTransaction, error)
 	GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error)
 	GetTransactionOverview(ctx context.Context, weeks int) ([]models.TransactionWeek, error)
+	GetTopBidders(ctx context.Context, limit int, sortBy string) ([]models.TopBidder, error)
 }
 
 type reportingService struct {
@@ -50,4 +51,8 @@ func (s *reportingService) GetTotalTransaction(ctx context.Context, interval str
 }
 func (s *reportingService) GetAuctionSummary(ctx context.Context) (models.AuctionSummary, error) {
 	return s.repo.GetAuctionSummary(ctx)
+}
+
+func (s *reportingService) GetTopBidders(ctx context.Context, limit int, sortBy string) ([]models.TopBidder, error) {
+	return s.repo.GetTopBidders(ctx, limit, sortBy)
 }

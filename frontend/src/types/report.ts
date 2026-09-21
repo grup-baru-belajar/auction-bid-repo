@@ -27,3 +27,14 @@ export interface AuctionSummary {
   totalBidsCompleted: number;
   totalBidsAll: number;
 }
+
+/** GET /reporting/top-auction — the 5 auctions with the most bids. */
+export interface TopAuction {
+  id: number;
+  auctionName: string;
+  startingPrice: number;
+  highestBid: number;
+  totalBid: number;
+  bidders: number;
+  status: AuctionStatusName;
+}
