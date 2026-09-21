@@ -432,6 +432,9 @@ Mengambil jumlah auction yang dibuat **dan** jumlah bid yang masuk, per hari.
 
 ### Authorization
 
+ADMIN only.
+
+### Request
 
 ```http
 GET /reporting/auction-activity?interval=30
