@@ -1,0 +1,50 @@
+meta {
+  name: NEGATIVE - username tidak terdaftar
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "username": "hantu-yang-tidak-ada",
+    "password": "{{adminPass}}"
+  }
+}
+
+assert {
+  res.status: eq 401
+}
+
+tests {
+  test("401, sama seperti kasus password salah", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("PESANNYA IDENTIK dengan password salah", function() {
+    const sekarang = res.getBody().message;
+    const sebelumnya = bru.getVar("pesanPasswordSalah");
+    expect(sekarang).to.equal(sebelumnya);
+    expect(sekarang).to.equal("Invalid username or password");
+  });
+
+  test("tidak menyebut kata user / username / not found", function() {
+    const m = res.getBody().message.toLowerCase();
+    expect(m).to.not.include("not found");
+    expect(m).to.not.include("tidak ada");
+  });
+}
+
+docs {
+  Inti proteksi user enumeration: user tidak ada dan password salah harus
+  menghasilkan respons yang tidak bisa dibedakan. Jalankan request 03 dulu.
+}

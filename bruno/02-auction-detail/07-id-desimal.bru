@@ -1,0 +1,27 @@
+meta {
+  name: EDGE - id = 1.5
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/auctions/1.5
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("ditolak 400 sebelum menyentuh service", function() {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody().message).to.equal("Invalid auction id");
+  });
+}
+
+docs {
+  strconv.ParseInt gagal, atau hasilnya <= 0. Divalidasi di handler,
+  jadi tidak ada query yang pernah dijalankan.
+}

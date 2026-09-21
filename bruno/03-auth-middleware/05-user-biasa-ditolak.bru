@@ -1,0 +1,32 @@
+meta {
+  name: NEGATIVE - USER menembus endpoint admin
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/reporting/top-auction
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{userToken}}
+}
+
+assert {
+  res.status: eq 403
+}
+
+tests {
+  test("403, bukan 401 - terautentikasi tapi tidak berwenang", function() {
+    expect(res.getStatus()).to.equal(403);
+    expect(res.getBody().success).to.equal(false);
+  });
+}
+
+docs {
+  Bedanya 401 vs 403 penting: token USER valid (lolos Auth),
+  tapi rolenya salah (ditolak RequireAdmin). Claim "role" di JWT
+  yang menentukan ini.
+}

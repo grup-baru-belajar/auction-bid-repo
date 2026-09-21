@@ -1,0 +1,22 @@
+meta {
+  name: NEGATIVE - tanpa header Authorization
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/reporting/top-auction
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+tests {
+  test("401 Unauthorized", function() {
+    expect(res.getStatus()).to.equal(401);
+    expect(res.getBody().message).to.equal("Unauthorized");
+  });
+}

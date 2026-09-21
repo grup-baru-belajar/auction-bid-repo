@@ -1,0 +1,66 @@
+meta {
+  name: POSITIVE - login admin sukses
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "username": "{{adminUser}}",
+    "password": "{{adminPass}}"
+  }
+}
+
+vars:pre-request {
+  baseUrl: localhost:8080/api/v1
+  adminUser: admin
+  adminPass: admin123
+}
+
+vars:post-response {
+  adminToken: res.body.data.token
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+tests {
+  test("membalas 200 dengan envelope sukses", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.equal(true);
+    expect(res.getBody().message).to.equal("Login successful");
+  });
+  
+  test("mengembalikan token JWT tiga bagian", function() {
+    const token = res.getBody().data.token;
+    expect(token).to.be.a("string");
+    expect(token.split(".")).to.have.lengthOf(3);
+  });
+  
+  test("role admin terbaca ADMIN", function() {
+    expect(res.getBody().data.role).to.equal("ADMIN");
+    expect(res.getBody().data.username).to.equal("admin");
+  });
+  
+  test("hash password TIDAK ikut terkirim", function() {
+    expect(res.getBody().data).to.not.have.property("password");
+    expect(JSON.stringify(res.getBody())).to.not.include("$2a$");
+  });
+}
+
+docs {
+  Jalur bahagia. Menyimpan token ke {{adminToken}} untuk dipakai folder 03.
+  Assertion terakhir menjaga agar LoginResponse tidak pernah kebocoran hash.
+}

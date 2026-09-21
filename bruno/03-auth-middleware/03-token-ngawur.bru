@@ -1,0 +1,32 @@
+meta {
+  name: NEGATIVE - token ngawur
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/reporting/top-auction
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer sampah.bukan.jwt
+}
+
+assert {
+  res.status: eq 401
+}
+
+tests {
+  test("token tak terparsing ditolak, bukan 500", function() {
+    expect(res.getStatus()).to.equal(401);
+    expect(res.getBody().message).to.equal("Unauthorized");
+  });
+}
+
+docs {
+  Penting: harus 401, bukan 500. ParseWithClaims mengembalikan token nil
+  untuk string seperti ini, jadi kalau urutan pengecekan di token.go
+  terbalik, request ini akan memicu panic dan balasannya 500.
+}

@@ -1,0 +1,50 @@
+meta {
+  name: POSITIVE - login user biasa sukses
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "username": "{{userUser}}",
+    "password": "{{userPass}}"
+  }
+}
+
+vars:pre-request {
+  userUser: john
+  userPass: password123
+}
+
+vars:post-response {
+  userToken: res.body.data.token
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.role: eq USER
+}
+
+tests {
+  test("role-nya USER, bukan ADMIN", function() {
+    expect(res.getBody().data.role).to.equal("USER");
+  });
+  
+  test("token tersimpan untuk uji 403", function() {
+    expect(res.getBody().data.token).to.be.a("string");
+  });
+}
+
+docs {
+  Token USER dipakai di folder 03 untuk membuktikan RequireAdmin menolak non-admin.
+}

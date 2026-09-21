@@ -1,0 +1,32 @@
+meta {
+  name: EDGE - body kosong
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("pesannya BEDA dari JSON rusak", function() {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody().message).to.equal("Invalid request body");
+    expect(res.getBody().message).to.not.equal("Malformed JSON body");
+  });
+}
+
+docs {
+  Body kosong menghasilkan io.EOF, bukan json.SyntaxError, jadi jatuh ke
+  cabang terakhir respondBindError dengan pesan yang berbeda.
+}

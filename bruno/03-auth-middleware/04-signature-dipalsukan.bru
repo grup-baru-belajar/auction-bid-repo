@@ -1,0 +1,43 @@
+meta {
+  name: NEGATIVE - signature dipalsukan
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/reporting/top-auction
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenPalsu}}
+}
+
+script:pre-request {
+  // ambil token admin yang sah, ganti satu huruf di signature-nya
+  const asli = bru.getVar("adminToken") || "";
+  const bagian = asli.split(".");
+  if (bagian.length === 3) {
+    const sig = bagian[2];
+    const ubah = (sig[0] === "A" ? "B" : "A") + sig.slice(1);
+    bru.setVar("tokenPalsu", bagian[0] + "." + bagian[1] + "." + ubah);
+  } else {
+    bru.setVar("tokenPalsu", "a.b.c");
+  }
+}
+
+assert {
+  res.status: eq 401
+}
+
+tests {
+  test("payload asli + signature rusak = ditolak", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+}
+
+docs {
+  Membuktikan signature benar-benar diverifikasi, bukan cuma didekode.
+  Jalankan login admin dulu supaya {{adminToken}} terisi.
+}

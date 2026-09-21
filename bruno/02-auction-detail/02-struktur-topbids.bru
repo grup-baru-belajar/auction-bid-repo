@@ -1,0 +1,48 @@
+meta {
+  name: POSITIVE - topBids maksimal 3 dan terurut
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/auctions/{{auctionId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("maksimal 3 bid", function() {
+    expect(res.getBody().data.topBids.length).to.be.at.most(3);
+  });
+
+  test("terurut harga menurun", function() {
+    const bids = res.getBody().data.topBids;
+    for (let i = 1; i < bids.length; i++) {
+      expect(parseFloat(bids[i-1].bidPrice)).to.be.at.least(parseFloat(bids[i].bidPrice));
+    }
+  });
+
+  test("kalau harga seri, yang lebih dulu menang", function() {
+    const bids = res.getBody().data.topBids;
+    for (let i = 1; i < bids.length; i++) {
+      if (parseFloat(bids[i-1].bidPrice) === parseFloat(bids[i].bidPrice)) {
+        expect(new Date(bids[i-1].createdAt).getTime())
+          .to.be.at.most(new Date(bids[i].createdAt).getTime());
+      }
+    }
+  });
+
+  test("totalBidders tidak pernah melebihi totalBids", function() {
+    const d = res.getBody().data;
+    expect(d.totalBidders).to.be.at.most(d.totalBids);
+  });
+}
+
+docs {
+  Tes terakhir menguji beda COUNT(*) vs COUNT(DISTINCT user_id):
+  satu orang bisa nge-bid berkali-kali, jadi bidder selalu <= bid.
+}

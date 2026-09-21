@@ -1,0 +1,46 @@
+meta {
+  name: POSITIVE - detail lelang lengkap
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/auctions/{{auctionId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+tests {
+  test("200 tanpa perlu login (endpoint publik)", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().message).to.equal("Auction retrieved successfully");
+  });
+
+  test("semua field kontrak ada", function() {
+    const d = res.getBody().data;
+    ["id","auctionName","description","imageLink","startingPrice",
+     "lastPrice","createdAt","endTime","isCompleted","totalBids",
+     "totalBidders","topBids"].forEach(function(f) {
+      expect(d).to.have.property(f);
+    });
+  });
+
+  test("topBids selalu array, TIDAK PERNAH null", function() {
+    expect(res.getBody().data.topBids).to.be.an("array");
+  });
+
+  test("harga dikirim sebagai string (decimal.Decimal)", function() {
+    expect(res.getBody().data.startingPrice).to.be.a("string");
+  });
+}
+
+docs {
+  Catatan kontrak: contract.md menulis harga sebagai angka, tapi
+  shopspring/decimal marshal jadi string. Assertion terakhir merekam
+  perilaku yang sebenarnya.
+}

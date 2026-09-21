@@ -1,0 +1,37 @@
+meta {
+  name: EDGE - username case sensitive
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "username": "ADMIN",
+    "password": "{{adminPass}}"
+  }
+}
+
+assert {
+  res.status: eq 401
+}
+
+tests {
+  test("ADMIN huruf besar tidak cocok dengan admin", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+}
+
+docs {
+  Query-nya WHERE username = $1, tanpa LOWER(), jadi memang case sensitive.
+  Ini mengunci perilaku itu supaya tidak berubah diam-diam.
+}

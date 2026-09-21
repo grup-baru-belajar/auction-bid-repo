@@ -1,0 +1,31 @@
+meta {
+  name: POSITIVE - ADMIN diterima
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/reporting/top-auction
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("token admin menembus Auth dan RequireAdmin", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.equal(true);
+  });
+}
+
+docs {
+  Penutup rantai: token dari request login 01 dipakai di sini.
+  Read-only, tidak mengubah data apa pun.
+}

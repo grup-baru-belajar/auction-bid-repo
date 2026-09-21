@@ -1,0 +1,29 @@
+meta {
+  name: NEGATIVE - lelang tidak ditemukan
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/auctions/999999
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("404 Auction not found", function() {
+    expect(res.getStatus()).to.equal(404);
+    expect(res.getBody().success).to.equal(false);
+    expect(res.getBody().message).to.equal("Auction not found");
+  });
+
+  test("tidak membocorkan detail SQL", function() {
+    const b = JSON.stringify(res.getBody()).toLowerCase();
+    expect(b).to.not.include("sql");
+    expect(b).to.not.include("pq:");
+  });
+}
